@@ -25,8 +25,8 @@
           <input
             type="submit"
             class="button block"
-            :value="loading ? 'Logging in...' : 'Log In'"
-            :disabled="loading"
+            :value="loadingLogin ? 'Logging in...' : 'Log In'"
+            :disabled="loadingLogin"
           />
         </div>
       </div>
@@ -66,8 +66,8 @@
           <input
             type="submit"
             class="button block"
-            :value="loading ? 'Registering...' : 'Register'"
-            :disabled="loading"
+            :value="loadingRegister ? 'Registering...' : 'Register'"
+            :disabled="loadingRegister"
           />
         </div>
       </div>
@@ -79,7 +79,8 @@
 import { ref } from 'vue'
 import { supabase } from '../lib/supabaseClient'
 
-const loading = ref(false)
+const loadingLogin = ref(false)
+const loadingRegister = ref(false)
 const loginEmail = ref('')
 const loginPassword = ref('')
 const registerEmail = ref('')
@@ -88,7 +89,7 @@ const registerUsername = ref('')
 
 const handleLogin = async () => {
   try {
-    loading.value = true
+    loadingLogin.value = true
     const { data, error } = await supabase.auth.signInWithPassword({
       email: loginEmail.value,
       password: loginPassword.value
@@ -99,22 +100,44 @@ const handleLogin = async () => {
       console.log(data)
     }
   } finally {
-    loading.value = false
+    loadingLogin.value = false
   }
 }
 
 const handleRegister = async () => {
   try {
-    loading.value = true
-    const { data, error } = await supabase.auth.signUp({
-      email: registerEmail.value,
-      password: registerPassword.value
-    })
-    if (error) {
-      throw error
-    } else alert('please check your e-mail for confirmation')
+    loadingRegister.value = true
+
+    // Check if user with the provided email already exists
+    const { data: usersData, error: usersError } = await supabase
+      .from('users')
+      .select()
+      .eq('email', registerEmail.value)
+
+    if (usersData && usersData.length > 0) {
+      // User with the provided email already exists
+      alert('Email has already been registered.')
+    } else {
+      const { data, error } = await supabase.auth.signUp({
+        email: registerEmail.value,
+        password: registerPassword.value
+      })
+
+      if (error) {
+        console.log(error)
+      } else {
+        console.log(data)
+
+        // Insert the user's email and username into the users table
+        await supabase
+          .from('users')
+          .insert([{ email: registerEmail.value, username: registerUsername.value }])
+
+        alert('Please check your email for confirmation.')
+      }
+    }
   } finally {
-    loading.value = false
+    loadingRegister.value = false
   }
 }
 </script>

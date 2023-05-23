@@ -8,36 +8,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted, toRefs } from 'vue'
+import { ref, onMounted } from 'vue'
 import { supabase } from '../lib/supabaseClient'
-import { useRoute } from 'vue-router'
 
-const { userId } = toRefs(useRoute().params)
 const username = ref('')
 const email = ref('')
 
-onMounted(() => {
-  getUserProfile(userId.value)
-})
-
-async function getUserProfile(userId) {
-  try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('username, email')
-      .eq('id', userId)
+onMounted(async () => {
+  const { data: userData, error: userError } = await supabase.auth.getSession()
+  if (userData) {
+    email.value = userData.session.user.email
+    const { data: usersData, error: usersError } = await supabase
+      .from('users')
+      .select('email, username')
+      .eq('email', userData.session.user.email)
       .single()
 
-    if (error) throw error
-
-    if (data) {
-      username.value = data.username
-      email.value = data.email
+    if (usersData) {
+      username.value = usersData.username
     }
-  } catch (error) {
-    alert(error.message)
   }
-}
+})
 
 async function logout() {
   const { error } = await supabase.auth.signOut()
