@@ -1,10 +1,7 @@
 <template>
   <div class="container" style="padding: 50px 0 100px 0">
-    <RouterLink to="/" v-if="showRegister">Home</RouterLink>
     <Account :userId="userId" v-if="session" :session="session" />
     <Login v-else-if="!showRegister" />
-    <RouterLink to="/register" v-if="!showRegister && !session">Register</RouterLink>
-
     <RouterView v-if="showRegister" />
   </div>
 </template>
@@ -34,3 +31,5 @@ onMounted(() => {
   })
 })
 </script>
+
+<style></style>

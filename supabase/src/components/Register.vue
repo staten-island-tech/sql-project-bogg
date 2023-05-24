@@ -1,15 +1,26 @@
 <template>
   <form class="row flex-center flex" @submit.prevent="handleRegister">
+    <h1>Registration</h1>
     <div class="col-6 form-widget">
-      <h1 class="header">Register</h1>
+      <h1 class="header">Create a new account</h1>
       <div>
         <input
           class="inputField"
           required
+          type="text"
+          placeholder="Username"
+          v-model="registerUsername"
+        />
+      </div>
+      <div class="email">
+        <input
+          class="input1Field"
+          required
           type="email"
-          placeholder="Email"
+          placeholder="E-mail"
           v-model="registerEmail"
         />
+        <h5>Note: An account activation email will be sent to the email address you provide.</h5>
       </div>
       <div>
         <input
@@ -20,15 +31,7 @@
           v-model="registerPassword"
         />
       </div>
-      <div>
-        <input
-          class="inputField"
-          required
-          type="text"
-          placeholder="Username"
-          v-model="registerUsername"
-        />
-      </div>
+
       <div>
         <input
           type="submit"
@@ -38,12 +41,15 @@
         />
       </div>
     </div>
+    <h1>Already a member?</h1>
+    <RouterLink to="/" class="login">Sign In</RouterLink>
   </form>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { supabase } from '../lib/supabaseClient'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 
 const loadingRegister = ref(false)
 const registerEmail = ref('')
@@ -88,6 +94,112 @@ const handleRegister = async () => {
 }
 </script>
 
-<style>
-/* Component styles go here */
+<style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f0f0f0;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+h5 {
+  color: black;
+}
+h1 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333333;
+}
+
+.inputField {
+  width: 100%;
+  height: 40px;
+  padding: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+.input1Field {
+  width: 100%;
+  height: 40px;
+  padding: 8px;
+  /* margin-bottom: 16px; */
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.email {
+  margin-bottom: 16px;
+}
+
+.button {
+  /* Sign In button styles */
+  font-weight: bold;
+  width: 100%;
+  height: 40px;
+  color: #ffffff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.button.block {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.header {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.login {
+  /* Register button styles */
+  border-style: solid;
+  border-color: #ffffff; /* Set the border color to white */
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  color: #007bff; /* Set the text color to the same blue as the Sign In button */
+  text-decoration: none;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.login:hover {
+  /* Register button hover styles */
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+.router-link-active {
+  background-color: #007bff;
+}
 </style>

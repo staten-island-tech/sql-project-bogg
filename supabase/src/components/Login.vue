@@ -1,7 +1,9 @@
 <template>
   <form class="row flex-center flex" @submit.prevent="handleLogin">
-    <div class="col-6 form-widget">
-      <h1 class="header">Login</h1>
+    <h1>PC PART PICKER</h1>
+    <h1>Your Account</h1>
+    <div class="col-6form-widget">
+      <h1 class="header">Sign In</h1>
       <div>
         <input class="inputField" required type="email" placeholder="Email" v-model="loginEmail" />
       </div>
@@ -18,17 +20,22 @@
         <input
           type="submit"
           class="button block"
-          :value="loadingLogin ? 'Logging in...' : 'Log In'"
+          :value="loadingLogin ? 'Logging in...' : 'Sign In'"
           :disabled="loadingLogin"
         />
       </div>
     </div>
+    <h1>Not a member?</h1>
+    <RouterLink to="/register" class="register" v-if="!showRegister && !session">
+      Register Here
+    </RouterLink>
   </form>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { supabase } from '../lib/supabaseClient'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 
 const loadingLogin = ref(false)
 const loginEmail = ref('')
@@ -52,6 +59,99 @@ const handleLogin = async () => {
 }
 </script>
 
-<style>
-/* Component styles go here */
+<style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f0f0f0;
+}
+.col-6form-widget {
+  width: 436.55px;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333333;
+}
+
+.inputField {
+  width: 100%;
+  height: 40px;
+  padding: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.button {
+  /* Sign In button styles */
+  font-weight: bold;
+  width: 100%;
+  height: 40px;
+  color: #ffffff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.button.block {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.header {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.register {
+  /* Register button styles */
+  border-style: solid;
+  border-color: #ffffff; /* Set the border color to white */
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  color: #007bff; /* Set the text color to the same blue as the Sign In button */
+  text-decoration: none;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.register:hover {
+  /* Register button hover styles */
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+.router-link-active {
+  background-color: #007bff;
+}
 </style>
