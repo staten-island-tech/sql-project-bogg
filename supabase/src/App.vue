@@ -1,9 +1,8 @@
 <script setup>
+import { RouterLink, RouterView } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import Account from './components/Account.vue'
-import Auth from './components/Auth.vue'
 import Login from './components/Login.vue'
-import Register from './components/Register.vue'
 import { supabase } from '../src/lib/supabaseClient'
 
 const session = ref()
@@ -21,8 +20,11 @@ onMounted(() => {
 
 <template>
   <div class="container" style="padding: 50px 0 100px 0">
+    <RouterLink to="/">Home</RouterLink>
     <Account :userId="userId" v-if="session" :session="session" />
-    <Auth v-else />
     <Login v-else />
+    <RouterLink to="/register">Register</RouterLink>
+
+    <RouterView />
   </div>
 </template>
