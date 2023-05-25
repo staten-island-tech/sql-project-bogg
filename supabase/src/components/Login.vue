@@ -69,7 +69,7 @@ const handleLogin = async () => {
   background-color: #f0f0f0;
 }
 .col-6form-widget {
-  width: 436.55px;
+  width: 700px;
 }
 form {
   display: flex;

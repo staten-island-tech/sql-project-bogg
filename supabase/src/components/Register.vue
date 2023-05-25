@@ -1,7 +1,7 @@
 <template>
   <form class="row flex-center flex" @submit.prevent="handleRegister">
     <h1>Registration</h1>
-    <div class="col-6 form-widget">
+    <div class="col-6form-widget">
       <h1 class="header">Create a new account</h1>
       <div>
         <input
@@ -102,6 +102,9 @@ const handleRegister = async () => {
   justify-content: center;
   height: 100vh;
   background-color: #f0f0f0;
+}
+.col-6form-widget {
+  width: 700px;
 }
 
 form {
