@@ -43,191 +43,183 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import FilterComponent from './FilterComponent.vue'
-import * as data from '../data/index.js'
+import * as importedData from '../data/index.js'
+import { ref, reactive, defineProps, defineEmits, computed, watch, onMounted } from 'vue'
 
-export default {
-  name: 'about',
-  emits: ['addBuild', 'keys'],
-  components: {
-    FilterComponent
-  },
-  props: {
-    part: {
+const props = defineProps({
+  part: {
       type: String,
       required: true
     },
-    filters: {
+  filters: {
       type: Array,
       required: false
     }
-  },
-  data() {
-    return {
-      currentCount: 200,
-      data: [],
-      filtersList: {},
-      selectedFilters: {},
-      keys: []
-    }
-  },
-  methods: {
-    addToBuild(part) {
-      this.$emit('addBuild', part)
-    },
-    manageFilters(filter) {
-      if (filter[2]) {
-        if (this.selectedFilters[filter[0]] === undefined) {
-          this.selectedFilters[filter[0]] = [filter[1]]
-        } else this.selectedFilters[filter[0]].push(filter[1])
-      } else {
-        this.selectedFilters[filter[0]] = this.selectedFilters[filter[0]].filter(
-          (existingFilter) => existingFilter !== filter[1]
-        )
-      }
-      if (this.selectedFilters[filter[0]].length === 0) delete this.selectedFilters[filter[0]]
-    },
-    filterValue(data) {
-      let newObj = this.selectedFilters
-      if (data.objKey !== undefined) {
-        if (newObj[data.key] === undefined) {
-          newObj[data.key] = { all: {}, min: {}, max: {}, default: {}, current: '' }
-        }
-        newObj[data.key][data.objKey] = data.values
-        newObj[data.key].current = data.objKey
-      } else {
-        newObj[data.key] = data.values
-      }
-      this.selectedFilters = newObj
-    },
-    increaseCount() {
-      if (this.currentCount < this.data.length) this.currentCount += 200
-      else this.currentCount = this.data.length
-    }
-  },
-  computed: {
-    showLoadMoreButton() {
-      return this.currentPage * this.itemsPerPage < this.filteredData.length
-    },
-    createData() {
-      this.data = data[this.part].data.map((data) => {
-        return Object.entries(data).reduce((acc, [key, value]) => {
-          if (typeof value === 'object') {
-            if (Array.isArray(value)) {
-              value[0] === 'USD' ? (value = parseFloat(value[1])) : (value = parseFloat(value[0]))
-            } else {
-              if (value === null) {
-                value = {}
-              } else if (value.default === null) {
-                value = { min: value.min, max: value.max }
-              } else if (value.min === null && value.max === null) {
-                value = { default: value.default }
-              } else {
-                value = Object.values(value)[0]
-              }
-            }
-          }
-          acc[key] = value
-          return acc
-        }, {})
-      })
-    },
-    filteredData() {
-      return this.data.filter((data) => {
-        for (const [key, value] of Object.entries(this.selectedFilters)) {
-          const dataValue = data[key]
+})
 
-          if (typeof value === 'object' && value.all !== undefined) {
-            if (value.current === 'min' || value.current === 'max') {
-              if (
-                dataValue.min === undefined ||
-                dataValue.min < value.min.min ||
-                dataValue.min > value.min.max ||
-                dataValue.max < value.max.min ||
-                dataValue.max > value.max.max
-              )
-                return false
-            } else if (value.current === 'default') {
-              if (
-                dataValue.default === undefined ||
-                dataValue.default < value.default.min ||
-                dataValue.default > value.default.max
-              )
-                return false
-            } else {
-              if (dataValue.default === undefined) {
-                if (dataValue.min < value.all.min || dataValue.max > value.all.max) return false
-              } else {
-                if (dataValue.default < value.all.min || dataValue.default > value.all.max)
-                  return false
-              }
-            }
-          } else if (typeof value === 'object' && !Array.isArray(value)) {
-            if (dataValue < value.min || dataValue > value.max) return false
-          } else {
-            if (!value.includes(dataValue)) return false
-          }
-        }
-        return true
-      })
-    },
-    convertList() {
-      this.filtersList = Object.entries(this.data[0]).reduce((acc, [key, value]) => {
-        let set = []
-        if (typeof value === 'object') {
-          set = this.data.reduce(
-            (acc, obj) => {
-              if (obj[key].min !== undefined && obj[key].max !== undefined) {
-                acc.min.add(obj[key].min)
-                acc.max.add(obj[key].max)
-              } else if (obj[key].default !== undefined) {
-                acc.default.add(obj[key].default)
-              }
-              return acc
-            },
-            { default: new Set(), min: new Set(), max: new Set() }
-          )
-          if (set.min.size + set.max.size + set.default.size === 0) return acc
-          acc[key] = {
-            default: Array.from(set.default),
-            min: Array.from(set.min),
-            max: Array.from(set.max)
-          }
-        } else {
-          set = new Set(
-            this.data.map((obj) => (typeof obj[key] === 'object' ? undefined : obj[key]))
-          )
-          set.delete(undefined)
-          set = Array.from(set)
-          if (set.length !== 1 && set[0] !== null) {
-            acc[key] = set
-          }
-        }
-        return acc
-      }, {})
+const emit = defineEmits(['addBuild', 'keys'])
 
-      this.keys = Object.keys(this.filtersList).filter(
-        (data) => Array.isArray(this.filtersList[data]) && data.length < 17
-      )
+const currentCount = ref(200)
+const data = ref([])
+const filtersList = reactive({})
+const selectedFilters = reactive({})
+const keys = ref([])
+
+function addToBuild(part) {
+  emit('addBuild', part)
+}
+
+function manageFilters(filter) {
+  if (filter[2]) {
+    if (selectedFilters[filter[0]] === undefined) {
+      selectedFilters[filter[0]] = [filter[1]]
+    } else selectedFilters[filter[0]].push(filter[1])
+  } else {
+    selectedFilters[filter[0]] = selectedFilters[filter[0]].filter(
+      (existingFilter) => existingFilter !== filter[1]
+    )
+  }
+  if (selectedFilters[filter[0]].length === 0) delete selectedFilters[filter[0]]
+}
+
+function filterValue(data) {
+  if (data.objKey !== undefined) {
+    if (selectedFilters[data.key] === undefined) {
+      selectedFilters[data.key] = { all: {}, min: {}, max: {}, default: {}, current: '' }
     }
-  },
-  watch: {
-    part(newValue, oldValue) {
-      this.createData
-      this.convertList
-      this.selectedFilters = {}
-      this.currentCount = 200
-    },
-    filtersList(newValue, oldValue) {
-      this.filteredData
-    }
-  },
-  mounted() {
-    this.createData
-    this.convertList
+    selectedFilters[data.key][data.objKey] = data.values
+    selectedFilters[data.key].current = data.objKey
+  } else {
+    selectedFilters[data.key] = data.values
   }
 }
+
+function increaseCount() {
+  if (currentCount.value < data.value.length) currentCount.value += 200
+  else currentCount.value = data.value.length
+}
+
+const showLoadMoreButton = computed(() => {
+  return this.currentPage * this.itemsPerPage < this.filteredData.length
+})
+
+const createData = computed(() => {
+  data.value = importedData[props.part].data.map((data) => {
+    return Object.entries(data).reduce((acc, [key, value]) => {
+      if (typeof value === 'object') {
+        if (Array.isArray(value)) {
+          value[0] === 'USD' ? (value = parseFloat(value[1])) : (value = parseFloat(value[0]))
+        } else {
+          if (value === null) {
+            value = {}
+          } else if (value.default === null) {
+            value = { min: value.min, max: value.max }
+          } else if (value.min === null && value.max === null) {
+            value = { default: value.default }
+          } else {
+            value = Object.values(value)[0]
+          }
+        }
+      }
+      acc[key] = value
+      return acc
+    }, {})
+  })
+})
+
+const filteredData = computed(() => {
+  return data.value.filter((data) => {
+    for (const [key, value] of Object.entries(selectedFilters)) {
+      const dataValue = data[key]
+
+      if (typeof value === 'object' && value.all !== undefined) {
+        if (value.current === 'min' || value.current === 'max') {
+          if (
+            dataValue.min === undefined ||
+            dataValue.min < value.min.min ||
+            dataValue.min > value.min.max ||
+            dataValue.max < value.max.min ||
+            dataValue.max > value.max.max
+          )
+            return false
+        } else if (value.current === 'default') {
+          if (
+            dataValue.default === undefined ||
+            dataValue.default < value.default.min ||
+            dataValue.default > value.default.max
+          )
+            return false
+        } else {
+          if (dataValue.default === undefined) {
+            if (dataValue.min < value.all.min || dataValue.max > value.all.max) return false
+          } else {
+            if (dataValue.default < value.all.min || dataValue.default > value.all.max)
+              return false
+          }
+        }
+      } else if (typeof value === 'object' && !Array.isArray(value)) {
+        if (dataValue < value.min || dataValue > value.max) return false
+      } else {
+        if (!value.includes(dataValue)) return false
+      }
+    }
+    return true
+  })
+})
+
+const convertList = computed(() => {
+  Object.assign(filtersList, Object.entries(data.value[0]).reduce((acc, [key, value]) => {
+    let set = []
+    if (typeof value === 'object') {
+      set = this.data.reduce(
+        (acc, obj) => {
+          if (obj[key].min !== undefined && obj[key].max !== undefined) {
+            acc.min.add(obj[key].min)
+            acc.max.add(obj[key].max)
+          } else if (obj[key].default !== undefined) {
+            acc.default.add(obj[key].default)
+          }
+          return acc
+        },
+        { default: new Set(), min: new Set(), max: new Set() }
+      )
+      if (set.min.size + set.max.size + set.default.size === 0) return acc
+      acc[key] = {
+        default: Array.from(set.default),
+        min: Array.from(set.min),
+        max: Array.from(set.max)
+      }
+    } else {
+      set = new Set(
+        this.data.map((obj) => (typeof obj[key] === 'object' ? undefined : obj[key]))
+      )
+      set.delete(undefined)
+      set = Array.from(set)
+      if (set.length !== 1 && set[0] !== null) {
+        acc[key] = set
+      }
+    }
+    return acc
+  }, {}))
+
+  keys.value = Object.keys(filtersList.value).filter(
+    (data) => Array.isArray(this.filtersList[data]) && data.length < 17
+  )
+})
+
+watch(emit.part, (newValue, oldValue) => {
+  createData.value
+  convertList.value
+  Object.assign(selectedFilters, {})
+  currentCount.value = 200
+})
+
+onMounted(() => {
+  createData.value
+  convertList.value
+})
 </script>
 <style scoped>
 @import "../assets/base.css";

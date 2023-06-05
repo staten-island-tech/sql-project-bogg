@@ -23,11 +23,11 @@ import Account from '../components/Account.vue';
 import { ref, onMounted, watch } from 'vue';
 import { RouterLink, useRouter, useRoute } from 'vue-router';
 import { userSessionStore } from '../stores/userSession';
+import { supabase } from '../lib/supabaseClient'
 
 const router = useRouter();
 const route = useRoute();
 const userSession = userSessionStore()
-
 const builds = ref(JSON.parse(localStorage.getItem('builds')));
 
 watch(route, (to, from) => {
@@ -40,12 +40,22 @@ watch(userSession.session, (newVal, oldVal) => {
   }
 })
 
-onMounted(() => {
-  let getBuilds = JSON.parse(localStorage.getItem('builds'))
+onMounted(async () => {
+  let { data: builds, error } = await supabase
+  .from('builds')
+  .select("*")
+  .eq('used_id', userSession.user.id)
   if (getBuilds === undefined) {
     getBuilds = []
     localStorage.setItem('builds', getBuilds)
   }
+
+  
+  // let getBuilds = JSON.parse(localStorage.getItem('builds'))
+  // if (getBuilds === undefined) {
+  //   getBuilds = []
+  //   localStorage.setItem('builds', getBuilds)
+  // }
 })
 </script>
 <style scoped>
