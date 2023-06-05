@@ -10,7 +10,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { supabase } from '../lib/supabaseClient'
+import { useRouter } from 'vue-router'
+import { userSessionStore } from '../stores/userSession';
 
+const router = useRouter();
+const userSession = userSessionStore()
 const username = ref('')
 const email = ref('')
 
@@ -34,7 +38,11 @@ async function logout() {
   const { error } = await supabase.auth.signOut()
   if (error) {
     console.log(error)
-  } else alert('Logout has been successful.')
+  } else {
+    alert('Logout has been successful.')
+    userSession.signedIn = false
+    router.push('/')
+  }
 }
 </script>
 

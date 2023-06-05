@@ -1,6 +1,6 @@
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
-  --vt-c-white: #ffffff;
+  --vt-c-white: #bebebe;
   --vt-c-white-soft: #f8f8f8;
   --vt-c-white-mute: #f2f2f2;
 
@@ -19,6 +19,9 @@
   --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
   --vt-c-text-dark-1: var(--vt-c-white);
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
+
+  --dark-grey: rgb(50,50,50);
+
 }
 
 /* semantic color variables for this project */
@@ -27,13 +30,18 @@
   --color-background-soft: var(--vt-c-white-soft);
   --color-background-mute: var(--vt-c-white-mute);
 
-  --color-border: var(--vt-c-divider-light-2);
+  --color-border: rgb(50,50,50);
   --color-border-hover: var(--vt-c-divider-light-1);
 
   --color-heading: var(--vt-c-text-light-1);
   --color-text: var(--vt-c-text-light-1);
 
-  --section-gap: 160px;
+  --color-display: var(--dark-grey);
+  --color-arrow: var(--dark-grey);
+  --color-text: #111;
+  --color-hover-1: #999;
+  --color-button-background: rgba(50, 50, 50, 0.5);
+  --color-button-hover:rgba(20, 20, 20, 0.7);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -44,30 +52,14 @@
 
     --color-border: var(--vt-c-divider-dark-2);
     --color-border-hover: var(--vt-c-divider-dark-1);
-
+    --color-text: rgb(175, 175, 175)
     --color-heading: var(--vt-c-text-dark-1);
+
     --color-text: var(--vt-c-text-dark-2);
+    --arrow-color: #ccc;
+    --color-display: #fff;
+    --color-hover-1: rgb(100, 100, 100);
+    --color-button-background: rgba(100, 100, 100, 0.2);
+    --color-button-hover: rgba(100, 100, 100, 0.5);
   }
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  font-weight: normal;
-}
-
-body {
-  min-height: 100vh;
-  color: var(--color-text);
-  background: var(--color-background);
-  transition: color 0.5s, background-color 0.5s;
-  line-height: 1.6;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
-    Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  font-size: 15px;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
