@@ -20,26 +20,14 @@ const router = createRouter({
       meta: {
         needsAuth: true
       }
-      // children: [
-      //   {
-      //     path: 'build/:build',
-      //     name: 'build',
-      //     component: () => import('../views/SavedBuilds.vue')
-      //   },
-      //   {
-      //     path: 'new',
-      //     name: 'new',
-      //     component: () => import('../views/SavedBuilds.vue')
-      //   }
-      // ]
     },
     {
-      path: '/account/:userId/build/:build',
+      path: '/build/:build',
       name: 'build',
       component: () => import('../views/SavedBuilds.vue')
     },
     {
-      path: '/account/:userId/new',
+      path: '/:userId/new',
       name: 'new',
       component: () => import('../views/SavedBuilds.vue')
     },

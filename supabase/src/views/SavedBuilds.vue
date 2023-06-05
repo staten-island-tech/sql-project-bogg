@@ -19,12 +19,19 @@
       <button class="arrow" id="right" @click="changeValue(1)"></button>
     </div>
     <div class="display">
-      <ComponentDisplay @addBuild="updateBuild" class="display" :part="dataList[selectedValue]"
-        :filters="activeFilters" />
+      <ComponentDisplay
+        @addBuild="updateBuild"
+        class="display"
+        :part="dataList[selectedValue]"
+        :filters="activeFilters"
+      />
     </div>
     <div class="build-display">
-      <BuildComp :buildList="computerBuild" :current="selectedValue"
-        @changeDisplay="(event) => (selectedValue = event)" />
+      <BuildComp
+        :buildList="computerBuild.value"
+        :current="selectedValue"
+        @changeDisplay="(event) => (selectedValue = event)"
+      />
     </div>
   </div>
 </template>
@@ -32,12 +39,12 @@
 <script setup>
 import BuildComp from '../components/BuildComponent.vue'
 import ComponentDisplay from '../components/ComponentDisplay.vue'
-import { ref, onMounted } from 'vue';
-import { onRoute } from 'vue-router'
-import { userSessionStore } from '../stores/userSession';
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { userSessionStore } from '../stores/userSession'
 
 const userSession = userSessionStore()
-const route = onRoute()
+const route = useRoute()
 const activeFilters = ref([])
 const computerBuild = ref([])
 const selectedValue = ref(0)
@@ -70,30 +77,30 @@ function changeValue(num) {
   selectedValue.value += num
   if (selectedValue.value === -1) selectedValue.value = this.dataList.length - 1
   else if (selectedValue.value === dataList.length) selectedValue.value = 0
-  activeFilters = []
+  activeFilters.value = []
 }
 
 function updateBuild(part) {
   this.changeValue(1)
 
-  computerBuild[part.part] = part.item
+  computerBuild.value[part.part] = part.item
 }
 
 onMounted(() => {
-  computerBuild = this.dataList.reduce((acc, item) => {
-      acc[item] = ''
-      return acc
-    }, {})
-    if (route.name !== 'new') {
-      computerBuild.value = JSON.parse(localStorage.getItem('builds')).filter(
-        (obj) => obj.name === route.params.build
-      )[0].build
-    }
+  computerBuild.value = dataList.reduce((acc, item) => {
+    acc[item] = ''
+    return acc
+  }, {})
+  if (route.name !== 'new') {
+    computerBuild.value = JSON.parse(localStorage.getItem('builds')).filter(
+      (obj) => obj.name === route.params.build
+    )[0].build
+  }
 })
 </script>
 
 <style scoped>
-@import "../assets/base.css";
+@import '../assets/base.css';
 
 * {
   font-size: 16px;

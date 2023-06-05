@@ -4,7 +4,12 @@
     <div class="head">
       <div class="key keym">Add</div>
       <div class="head-container">
-        <div v-for="(key, index) in keys" :key="key" class="key" :style="'width: ' + 100 / keys.length + '%;'">
+        <div
+          v-for="(key, index) in keys"
+          :key="key"
+          class="key"
+          :style="'width: ' + 100 / keys.length + '%;'"
+        >
           <p class="key-text">
             {{
               key
@@ -21,7 +26,11 @@
       </div>
     </div>
     <div class="filters">
-      <FilterComponent :list="filtersList" @filterControl="manageFilters" @valueChange="filterValue" />
+      <FilterComponent
+        :list="filtersList"
+        @filterControl="manageFilters"
+        @valueChange="filterValue"
+      />
     </div>
     <ul class="main">
       <li v-for="component in filteredData.slice(0, currentCount)" :key="component">
@@ -30,8 +39,12 @@
         </button>
         <div class="parent">
           <div class="child-subkey">
-            <p v-for="(value, index) in keys" class="subkey" :style="'width: ' + 100 / keys.length + '%;'">
-              {{ JSON.stringify(component[value]) !== "{}" ? component[value] : "None" }}
+            <p
+              v-for="(value, index) in keys"
+              class="subkey"
+              :style="'width: ' + 100 / keys.length + '%;'"
+            >
+              {{ JSON.stringify(component[value]) !== '{}' ? component[value] : 'None' }}
             </p>
           </div>
         </div>
@@ -50,13 +63,13 @@ import { ref, reactive, defineProps, defineEmits, computed, watch, onMounted } f
 
 const props = defineProps({
   part: {
-      type: String,
-      required: true
-    },
+    type: String,
+    required: true
+  },
   filters: {
-      type: Array,
-      required: false
-    }
+    type: Array,
+    required: false
+  }
 })
 
 const emit = defineEmits(['addBuild', 'keys'])
@@ -100,10 +113,6 @@ function increaseCount() {
   if (currentCount.value < data.value.length) currentCount.value += 200
   else currentCount.value = data.value.length
 }
-
-const showLoadMoreButton = computed(() => {
-  return this.currentPage * this.itemsPerPage < this.filteredData.length
-})
 
 const createData = computed(() => {
   data.value = importedData[props.part].data.map((data) => {
@@ -155,8 +164,7 @@ const filteredData = computed(() => {
           if (dataValue.default === undefined) {
             if (dataValue.min < value.all.min || dataValue.max > value.all.max) return false
           } else {
-            if (dataValue.default < value.all.min || dataValue.default > value.all.max)
-              return false
+            if (dataValue.default < value.all.min || dataValue.default > value.all.max) return false
           }
         }
       } else if (typeof value === 'object' && !Array.isArray(value)) {
@@ -170,42 +178,44 @@ const filteredData = computed(() => {
 })
 
 const convertList = computed(() => {
-  Object.assign(filtersList, Object.entries(data.value[0]).reduce((acc, [key, value]) => {
-    let set = []
-    if (typeof value === 'object') {
-      set = this.data.reduce(
-        (acc, obj) => {
-          if (obj[key].min !== undefined && obj[key].max !== undefined) {
-            acc.min.add(obj[key].min)
-            acc.max.add(obj[key].max)
-          } else if (obj[key].default !== undefined) {
-            acc.default.add(obj[key].default)
-          }
-          return acc
-        },
-        { default: new Set(), min: new Set(), max: new Set() }
-      )
-      if (set.min.size + set.max.size + set.default.size === 0) return acc
-      acc[key] = {
-        default: Array.from(set.default),
-        min: Array.from(set.min),
-        max: Array.from(set.max)
+  Object.assign(
+    filtersList,
+    Object.entries(data.value[0]).reduce((acc, [key, value]) => {
+      let set = []
+      if (typeof value === 'object') {
+        set = data.value.reduce(
+          (acc, obj) => {
+            if (obj[key].min !== undefined && obj[key].max !== undefined) {
+              acc.min.add(obj[key].min)
+              acc.max.add(obj[key].max)
+            } else if (obj[key].default !== undefined) {
+              acc.default.add(obj[key].default)
+            }
+            return acc
+          },
+          { default: new Set(), min: new Set(), max: new Set() }
+        )
+        if (set.min.size + set.max.size + set.default.size === 0) return acc
+        acc[key] = {
+          default: Array.from(set.default),
+          min: Array.from(set.min),
+          max: Array.from(set.max)
+        }
+      } else {
+        set = new Set(
+          data.value.map((obj) => (typeof obj[key] === 'object' ? undefined : obj[key]))
+        )
+        set.delete(undefined)
+        set = Array.from(set)
+        if (set.length !== 1 && set[0] !== null) {
+          acc[key] = set
+        }
       }
-    } else {
-      set = new Set(
-        this.data.map((obj) => (typeof obj[key] === 'object' ? undefined : obj[key]))
-      )
-      set.delete(undefined)
-      set = Array.from(set)
-      if (set.length !== 1 && set[0] !== null) {
-        acc[key] = set
-      }
-    }
-    return acc
-  }, {}))
-
-  keys.value = Object.keys(filtersList.value).filter(
-    (data) => Array.isArray(this.filtersList[data]) && data.length < 17
+      return acc
+    }, {})
+  )
+  keys.value = Object.keys(filtersList).filter(
+    (data) => Array.isArray(filtersList[data]) && data.length < 17
   )
 })
 
@@ -222,7 +232,7 @@ onMounted(() => {
 })
 </script>
 <style scoped>
-@import "../assets/base.css";
+@import '../assets/base.css';
 
 .parts-container {
   left: 20rem;

@@ -6,7 +6,10 @@
 
     <ul>
       <li v-for="([component, item], index) in Object.entries(buildList)" :key="component">
-        <button @click="$emit('changeDisplay', index)" :class="current === index ? 'selected' : 'none'">
+        <button
+          @click="$emit('changeDisplay', index)"
+          :class="current === index ? 'selected' : 'none'"
+        >
           <p class="component">
             {{
               component
@@ -32,80 +35,83 @@
     <button v-if="$route.name !== 'new'" class="remove extra" @click="remove">Remove</button>
   </div>
 </template>
-<script>
-export default {
-  name: 'Build',
-  emits: ['changeDisplay'],
-  data() {
-    return {
-      save: 'Save Build',
-      input: '',
-    }
+<script setup>
+import { ref, reactive, defineProps, defineEmits, computed, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+
+const props = defineProps({
+  buildList: {
+    type: Object,
+    required: true
   },
-  props: {
-    buildList: {
-      type: Object,
-      required: true
-    },
-    current: {
-      type: Number,
-      required: true
-    }
-  },
-  computed: {
-    totalPrice() {
-      return Object.values(this.buildList).reduce(
-        (sum, component) => (component === '' ? sum : sum + component.price),
-        0
-      )
-    },
-    fullList() {
-      return this.components
-    },
-    commit() {
-      this.save = "Saved"
-      let current = JSON.parse(localStorage.getItem('builds'))
-      localStorage.removeItem('builds')
-      if (current === undefined || current === null) {
-        current = []
-      }
-      if (this.$route.name === 'new') {
-        if (this.input === '') {
-          this.input = Math.round(Math.random() * 999999).toString()
-        }
-        this.input = this.input.replaceAll(' ', '')
-        current.push({ name: this.input, build: this.buildList })
-      } else {
-        current = current.filter((obj) => obj.name !== this.$route.params.name)
-        current.push({ name: this.$route.params.name, build: this.buildList })
-      }
-      localStorage.setItem('builds', JSON.stringify(current))
-    },
-    remove() {
-      let current = JSON.parse(localStorage.getItem('builds'))
-      localStorage.removeItem('builds')
-      if (window.confirm('Are you sure you want to delete this build?')) {
-        current = current.filter((value) => value.name !== this.$route.params.name)
-        localStorage.setItem('builds', JSON.stringify(current))
-        window.location.href = window.location.href.split(/\/build|\/new/)[0]
-      } else {
-        localStorage.setItem('builds', JSON.stringify(current))
-      }
-    }
-  },
-  watch: {
-    buildList: {
-      handler(newVal, oldVal) {
-        this.save = "Save Build"
-      },
-      deep: true
-    }
+  current: {
+    type: Number,
+    required: true
   }
-}
+})
+
+const emit = defineEmits(['changeDisplay'])
+
+const route = useRoute()
+const save = ref('Save Build')
+const input = ref('')
+
+const totalPrice = computed(() => {
+  return Object.values(buildList).reduce(
+    (sum, component) => (component === '' ? sum : sum + component.price),
+    0
+  )
+})
+
+const commit = computed(() => {
+  save.value = 'Saved'
+  let current = JSON.parse(localStorage.getItem('builds'))
+  localStorage.removeItem('builds')
+  if (current === undefined || current === null) {
+    current = []
+  }
+  if (route.name === 'new') {
+    if (input.value === '') {
+      input.value = Math.round(Math.random() * 999999).toString()
+    }
+    input.value = input.value.replaceAll(' ', '')
+    current.push({ name: input.value, build: this.buildList })
+  } else {
+    current = current.filter((obj) => obj.name !== this.$route.params.name)
+    current.push({ name: route.params.builf, build: props.buildList })
+  }
+  localStorage.setItem('builds', JSON.stringify(current))
+})
+
+const remove = computed(() => {
+  let current = JSON.parse(localStorage.getItem('builds'))
+  localStorage.removeItem('builds')
+  if (window.confirm('Are you sure you want to delete this build?')) {
+    current = current.filter((value) => value.name !== route.params.build)
+    localStorage.setItem('builds', JSON.stringify(current))
+    window.location.href = window.location.href.split(/\/build|\/new/)[0]
+  } else {
+    localStorage.setItem('builds', JSON.stringify(current))
+  }
+})
+
+watch(props.buildList, (newVal, oldVal) => {
+  this.save = 'Save Build'
+})
+// export default {
+//   watch: {
+//     buildList: {
+//       handler(newVal, oldVal) {
+//         this.save = 'Save Build'
+//       },
+//       deep: true
+//     }
+//   }
+// }
 </script>
 
 <style scoped>
-@import "../assets/base.css";
+@import '../assets/base.css';
 
 p {
   display: inline-block;

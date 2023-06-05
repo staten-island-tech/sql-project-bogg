@@ -3,12 +3,11 @@
     <nav>
       <h1 id="title">Builds</h1>
       <div class="parent">
-        <RouterLink :to="'/account/' + userSession.session.user.id + '/build/' + build.name" class="child"
-          v-for="build in builds">
+        <RouterLink :to="'/build/' + build.name" class="child" v-for="build in builds">
           <p class="name">{{ build.name }}</p>
           <p class="description"></p>
         </RouterLink>
-        <RouterLink :to="`/account/${userSession.session.user.id}/new`" class="child new">
+        <RouterLink :to="`/${userSession.session.user.id}/new`" class="child new">
           <p class="name">New</p>
           <p class="description"></p>
         </RouterLink>
@@ -19,16 +18,16 @@
 </template>
 
 <script setup>
-import Account from '../components/Account.vue';
-import { ref, onMounted, watch } from 'vue';
-import { RouterLink, useRouter, useRoute } from 'vue-router';
-import { userSessionStore } from '../stores/userSession';
+import Account from '../components/Account.vue'
+import { ref, onMounted, watch } from 'vue'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
+import { userSessionStore } from '../stores/userSession'
 import { supabase } from '../lib/supabaseClient'
 
-const router = useRouter();
-const route = useRoute();
+const router = useRouter()
+const route = useRoute()
 const userSession = userSessionStore()
-const builds = ref(JSON.parse(localStorage.getItem('builds')));
+const builds = ref(JSON.parse(localStorage.getItem('builds')))
 
 watch(route, (to, from) => {
   builds.value = JSON.parse(localStorage.getItem('builds'))
@@ -36,30 +35,29 @@ watch(route, (to, from) => {
 
 watch(userSession.session, (newVal, oldVal) => {
   if (userSession.session === null) {
-    router.push("/")
+    router.push('/')
   }
 })
 
 onMounted(async () => {
   let { data: builds, error } = await supabase
-  .from('builds')
-  .select("*")
-  .eq('used_id', userSession.user.id)
+    .from('builds')
+    .select('*')
+    .eq('used_id', userSession.session.user.id)
+  let getBuilds = JSON.parse(localStorage.getItem('builds'))
   if (getBuilds === undefined) {
     getBuilds = []
     localStorage.setItem('builds', getBuilds)
   }
 
-  
-  // let getBuilds = JSON.parse(localStorage.getItem('builds'))
-  // if (getBuilds === undefined) {
-  //   getBuilds = []
-  //   localStorage.setItem('builds', getBuilds)
-  // }
+  if (getBuilds === undefined) {
+    getBuilds = []
+    localStorage.setItem('builds', getBuilds)
+  }
 })
 </script>
-<style scoped>
-@import "../assets/base.css";
+<style>
+@import '../assets/base.css';
 
 :root {
   --background-color: rgb(255, 255, 255);
@@ -172,6 +170,6 @@ h1 {
 }
 
 .new {
-  border-color: rgb(212, 175, 55)
+  border-color: rgb(212, 175, 55);
 }
 </style>
