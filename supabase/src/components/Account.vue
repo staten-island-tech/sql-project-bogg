@@ -1,8 +1,8 @@
 <template>
   <div class="account">
     <h1>Welcome to Your Account</h1>
-    <p>Username: {{ username }}</p>
-    <p>Email: {{ email }}</p>
+    <h2>Username: {{ username }}</h2>
+    <h2>Email: {{ email }}</h2>
     <button @click="logout">Logout</button>
   </div>
 </template>
@@ -11,9 +11,9 @@
 import { ref, onMounted } from 'vue'
 import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'vue-router'
-import { userSessionStore } from '../stores/userSession';
+import { userSessionStore } from '../stores/userSession'
 
-const router = useRouter();
+const router = useRouter()
 const userSession = userSessionStore()
 const username = ref('')
 const email = ref('')
@@ -49,5 +49,9 @@ async function logout() {
 <style scoped>
 .account {
   margin: 20px;
+}
+
+h1 {
+  font-size: 50px;
 }
 </style>

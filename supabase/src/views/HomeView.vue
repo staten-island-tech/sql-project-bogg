@@ -1,5 +1,6 @@
 <template>
   <main>
+    <Account />
     <nav>
       <h1 id="title">Builds</h1>
       <div class="parent">
@@ -13,7 +14,6 @@
         </RouterLink>
       </div>
     </nav>
-    <Account />
   </main>
 </template>
 

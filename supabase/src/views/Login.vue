@@ -5,21 +5,36 @@
     <div class="col-6form-widget">
       <h1 class="header">Sign In</h1>
       <div>
-        <input class="inputField" required type="email" placeholder="Email" v-model="loginEmail" autocomplete="email" />
+        <input
+          class="inputField"
+          required
+          type="email"
+          placeholder="Email"
+          v-model="loginEmail"
+          autocomplete="email"
+        />
       </div>
       <div>
-        <input class="inputField" required type="password" placeholder="Password" v-model="loginPassword"
-          autocomplete="current-password" />
+        <input
+          class="inputField"
+          required
+          type="password"
+          placeholder="Password"
+          v-model="loginPassword"
+          autocomplete="current-password"
+        />
       </div>
       <div>
-        <input type="submit" class="button block" :value="loadingLogin ? 'Logging in...' : 'Sign In'"
-          :disabled="loadingLogin" />
+        <input
+          type="submit"
+          class="button block"
+          :value="loadingLogin ? 'Logging in...' : 'Sign In'"
+          :disabled="loadingLogin"
+        />
       </div>
     </div>
     <h1>Not a member?</h1>
-    <RouterLink to="/register" class="register" v-if="!showRegister">
-      Register Here
-    </RouterLink>
+    <RouterLink to="/register" class="register" v-if="!showRegister"> Register Here </RouterLink>
   </form>
 </template>
 
@@ -27,37 +42,33 @@
 import { ref } from 'vue'
 import { supabase } from '../lib/supabaseClient'
 import { RouterLink, useRouter } from 'vue-router'
-import { userSessionStore } from '../stores/userSession';
-import { onMounted } from 'vue';
+import { userSessionStore } from '../stores/userSession'
+import { onMounted } from 'vue'
 
-const router = useRouter();
+const router = useRouter()
 const loadingLogin = ref(false)
 const loginEmail = ref('')
 const loginPassword = ref('')
 const userSession = userSessionStore()
 
-
 const handleLogin = async () => {
   try {
-
     loadingLogin.value = true
     const { data, error } = await supabase.auth.signInWithPassword({
       email: loginEmail.value,
       password: loginPassword.value
     })
     if (error) {
-      throw (error)
+      throw error
     } else {
-      console.log(data, "loginPage Data")
+      console.log(data, 'loginPage Data')
       userSession.signedIn = true
-
     }
   } catch (error) {
     console.log(error)
-  }
-  finally {
+  } finally {
     loadingLogin.value = false
-    if (userSession.session.user.role === "authenticated") {
+    if (userSession.session.user.role === 'authenticated') {
       router.push(`/account/${userSession.session.user.id}`)
     }
   }
@@ -71,21 +82,13 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background-color: #f0f0f0;
-}
-
 .col-6form-widget {
   width: 700px;
 }
 
 form {
   display: flex;
+  width: 740px;
   flex-direction: column;
   align-items: center;
   background-color: #ffffff;

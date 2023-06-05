@@ -8,7 +8,7 @@
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { onMounted, ref, watch } from 'vue'
 import { supabase } from '../src/lib/supabaseClient'
-import { userSessionStore } from './stores/userSession';
+import { userSessionStore } from './stores/userSession'
 
 const userSession = userSessionStore()
 const router = useRouter()
@@ -41,4 +41,9 @@ onMounted(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.container {
+  display: flex;
+  justify-content: center;
+}
+</style>

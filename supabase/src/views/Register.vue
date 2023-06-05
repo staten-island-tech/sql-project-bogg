@@ -4,21 +4,43 @@
     <div class="col-6form-widget">
       <h1 class="header">Create a new account</h1>
       <div>
-        <input class="inputField" required type="text" placeholder="Username" v-model="registerUsername" />
+        <input
+          class="inputField"
+          required
+          type="text"
+          placeholder="Username"
+          v-model="registerUsername"
+        />
       </div>
       <div class="email">
-        <input class="input1Field" required type="email" placeholder="E-mail" v-model="registerEmail"
-          autocomplete="email" />
+        <input
+          class="input1Field"
+          required
+          type="email"
+          placeholder="E-mail"
+          v-model="registerEmail"
+          autocomplete="email"
+        />
         <h5>Note: An account activation email will be sent to the email address you provide.</h5>
       </div>
       <div>
-        <input class="inputField" required type="password" placeholder="Password" v-model="registerPassword"
-          autocomplete="current-password" />
+        <input
+          class="inputField"
+          required
+          type="password"
+          placeholder="Password"
+          v-model="registerPassword"
+          autocomplete="current-password"
+        />
       </div>
 
       <div>
-        <input type="submit" class="button block" :value="loadingRegister ? 'Registering...' : 'Register'"
-          :disabled="loadingRegister" />
+        <input
+          type="submit"
+          class="button block"
+          :value="loadingRegister ? 'Registering...' : 'Register'"
+          :disabled="loadingRegister"
+        />
       </div>
     </div>
     <h1>Already a member?</h1>
@@ -30,14 +52,14 @@
 import { ref, onMounted } from 'vue'
 import { supabase } from '../lib/supabaseClient'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
-import { userSessionStore } from '../stores/userSession';
+import { userSessionStore } from '../stores/userSession'
 
 const userSession = userSessionStore()
 const loadingRegister = ref(false)
 const registerEmail = ref('')
 const registerPassword = ref('')
 const registerUsername = ref('')
-const router = useRouter();
+const router = useRouter()
 
 const handleRegister = async () => {
   try {
@@ -64,9 +86,17 @@ const handleRegister = async () => {
         console.log(data)
 
         // Insert the user's email and username into the users table
-        await supabase
-          .from('users')
-          .insert([{ email: registerEmail.value, username: registerUsername.value }])
+        await supabase.from('users').insert([
+          {
+            email: registerEmail.value,
+            username: registerUsername.value,
+            Userid: null
+          }
+        ])
+        if (error) {
+          console.log(error)
+        } else {
+        }
 
         alert('Please check your email for confirmation.')
       }
