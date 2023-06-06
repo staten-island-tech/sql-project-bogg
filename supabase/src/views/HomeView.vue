@@ -1,10 +1,10 @@
 <template>
   <main>
-    <Account />
+    <h1>Welcome {{ user.username }}</h1>
     <nav>
-      <h1 id="title">Builds</h1>
+      <h2 id="title">Your Builds</h2>
       <div class="parent">
-        <RouterLink :to="'/build/' + build.name" class="child" v-for="build in builds">
+        <RouterLink :to="'/build/' + build.id" class="child" v-for="build in builds">
           <p class="name">{{ build.name }}</p>
           <p class="description"></p>
         </RouterLink>
@@ -13,12 +13,12 @@
           <p class="description"></p>
         </RouterLink>
       </div>
+      <button @click="logout" class="logout">Logout</button>
     </nav>
   </main>
 </template>
 
 <script setup>
-import Account from '../components/Account.vue'
 import { ref, onMounted, watch } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { userSessionStore } from '../stores/userSession'
@@ -27,11 +27,8 @@ import { supabase } from '../lib/supabaseClient'
 const router = useRouter()
 const route = useRoute()
 const userSession = userSessionStore()
-const builds = ref(JSON.parse(localStorage.getItem('builds')))
-
-watch(route, (to, from) => {
-  builds.value = JSON.parse(localStorage.getItem('builds'))
-})
+const builds = ref([])
+const user = ref({})
 
 watch(userSession.session, (newVal, oldVal) => {
   if (userSession.session === null) {
@@ -39,21 +36,32 @@ watch(userSession.session, (newVal, oldVal) => {
   }
 })
 
-onMounted(async () => {
-  let { data: builds, error } = await supabase
-    .from('builds')
-    .select('*')
-    .eq('used_id', userSession.session.user.id)
-  let getBuilds = JSON.parse(localStorage.getItem('builds'))
-  if (getBuilds === undefined) {
-    getBuilds = []
-    localStorage.setItem('builds', getBuilds)
+async function logout() {
+  const { error } = await supabase.auth.signOut()
+  if (error) {
+    console.log(error)
+  } else {
+    alert('You have been logged out')
+    userSession.signedIn = false
+    router.push('/')
   }
+}
 
-  if (getBuilds === undefined) {
-    getBuilds = []
-    localStorage.setItem('builds', getBuilds)
-  }
+onMounted(async () => {
+  let { data: info, error } = await supabase
+    .from('builds')
+    .select('name, info, id')
+    .eq('user_id', userSession.session.user.id)
+  builds.value = info
+
+  const { data: userData, error: usersError } = await supabase
+    .from('users')
+    .select('email, username')
+    .eq('email', userSession.session.user.email)
+    .single()
+  user.value = userData
+  console.log(info, userSession.session, userData)
+
 })
 </script>
 <style>
@@ -73,6 +81,51 @@ body {
   font-size: 10px;
 }
 
+main {
+  height: 100vh;
+  padding-top: 1rem;
+  width: 80vw;
+  text-align: center;
+}
+
+.logout {
+  background: #FF4742;
+  border: 1px solid #FF4742;
+  border-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: nunito, roboto, proxima-nova, "proxima nova", sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 16px;
+  min-height: 40px;
+  outline: 0;
+  padding: 12px 14px;
+  text-align: center;
+  text-rendering: geometricprecision;
+  text-transform: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  margin: auto;
+  margin-top: 2rem;
+}
+
+.logout:hover,
+.logout:active {
+  background-color: initial;
+  background-position: 0 0;
+  color: #FF4742;
+}
+
+.logout:active {
+  opacity: .5;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --hover-color: rgb(255, 255, 255);
@@ -81,17 +134,10 @@ body {
   }
 }
 
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
-}
-
 body {
   height: 100vh;
-  padding-top: 15px;
+  display: flex;
+  align-items: top;
 }
 
 header {
@@ -103,6 +149,13 @@ header {
 h1 {
   display: block;
   font-size: 5rem;
+  color: var(--h1-color);
+  text-align: center;
+}
+
+h2 {
+  font-size: 3rem;
+  display: block;
   color: var(--h1-color);
   text-align: center;
 }

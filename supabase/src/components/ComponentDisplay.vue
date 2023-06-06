@@ -4,12 +4,7 @@
     <div class="head">
       <div class="key keym">Add</div>
       <div class="head-container">
-        <div
-          v-for="(key, index) in keys"
-          :key="key"
-          class="key"
-          :style="'width: ' + 100 / keys.length + '%;'"
-        >
+        <div v-for="(key, index) in keys" :key="key" class="key" :style="'width: ' + 100 / keys.length + '%;'">
           <p class="key-text">
             {{
               key
@@ -26,25 +21,18 @@
       </div>
     </div>
     <div class="filters">
-      <FilterComponent
-        :list="filtersList"
-        @filterControl="manageFilters"
-        @valueChange="filterValue"
-      />
+      <FilterComponent :list="filtersList" @filterControl="manageFilters" @valueChange="filterValue" />
     </div>
     <ul class="main">
       <li v-for="component in filteredData.slice(0, currentCount)" :key="component">
-        <button @click="(event) => $emit('addBuild', { item: component, part: part })">
+        <button @click="(event) => emit('addBuild', { item: component, part: props.part })">
           Add to Build
         </button>
         <div class="parent">
           <div class="child-subkey">
-            <p
-              v-for="(value, index) in keys"
-              class="subkey"
-              :style="'width: ' + 100 / keys.length + '%;'"
-            >
-              {{ JSON.stringify(component[value]) !== '{}' ? component[value] : 'None' }}
+            <p v-for="value in keys" class="subkey" :style="'width: ' + 100 / keys.length + '%;'">
+              {{ value === "price" ? "$" : "" }}{{ JSON.stringify(component[value]) !== '{}' ? component[value] : 'None'
+              }}
             </p>
           </div>
         </div>
@@ -59,7 +47,7 @@
 <script setup>
 import FilterComponent from './FilterComponent.vue'
 import * as importedData from '../data/index.js'
-import { ref, reactive, defineProps, defineEmits, computed, watch, onMounted } from 'vue'
+import { ref, defineProps, defineEmits, computed, watch, onMounted } from 'vue'
 
 const props = defineProps({
   part: {
@@ -76,36 +64,32 @@ const emit = defineEmits(['addBuild', 'keys'])
 
 const currentCount = ref(200)
 const data = ref([])
-const filtersList = reactive({})
-const selectedFilters = reactive({})
+const filtersList = ref({})
+const selectedFilters = ref({})
 const keys = ref([])
-
-function addToBuild(part) {
-  emit('addBuild', part)
-}
 
 function manageFilters(filter) {
   if (filter[2]) {
-    if (selectedFilters[filter[0]] === undefined) {
-      selectedFilters[filter[0]] = [filter[1]]
-    } else selectedFilters[filter[0]].push(filter[1])
+    if (selectedFilters.value[filter[0]] === undefined) {
+      selectedFilters.value[filter[0]] = [filter[1]]
+    } else selectedFilters.value[filter[0]].push(filter[1])
   } else {
-    selectedFilters[filter[0]] = selectedFilters[filter[0]].filter(
+    selectedFilters.value[filter[0]] = selectedFilters.value[filter[0]].filter(
       (existingFilter) => existingFilter !== filter[1]
     )
   }
-  if (selectedFilters[filter[0]].length === 0) delete selectedFilters[filter[0]]
+  if (selectedFilters.value[filter[0]].length === 0) delete selectedFilters.value[filter[0]]
 }
 
 function filterValue(data) {
   if (data.objKey !== undefined) {
-    if (selectedFilters[data.key] === undefined) {
-      selectedFilters[data.key] = { all: {}, min: {}, max: {}, default: {}, current: '' }
+    if (selectedFilters.value[data.key] === undefined) {
+      selectedFilters.value[data.key] = { all: {}, min: {}, max: {}, default: {}, current: '' }
     }
-    selectedFilters[data.key][data.objKey] = data.values
-    selectedFilters[data.key].current = data.objKey
+    selectedFilters.value[data.key][data.objKey] = data.values
+    selectedFilters.value[data.key].current = data.objKey
   } else {
-    selectedFilters[data.key] = data.values
+    selectedFilters.value[data.key] = data.values
   }
 }
 
@@ -139,11 +123,12 @@ const createData = computed(() => {
 })
 
 const filteredData = computed(() => {
+  let temp = [];
   return data.value.filter((data) => {
-    for (const [key, value] of Object.entries(selectedFilters)) {
+    for (const [key, value] of Object.entries(selectedFilters.value)) {
       const dataValue = data[key]
-
       if (typeof value === 'object' && value.all !== undefined) {
+        temp.push(dataValue)
         if (value.current === 'min' || value.current === 'max') {
           if (
             dataValue.min === undefined ||
@@ -160,6 +145,11 @@ const filteredData = computed(() => {
             dataValue.default > value.default.max
           )
             return false
+          if (dataValue.default === undefined) {
+            if (dataValue.min < value.all.min || dataValue.max > value.all.max) return false
+          } else {
+            if (dataValue.default < value.all.min || dataValue.default > value.all.max) return false
+          }
         } else {
           if (dataValue.default === undefined) {
             if (dataValue.min < value.all.min || dataValue.max > value.all.max) return false
@@ -178,53 +168,52 @@ const filteredData = computed(() => {
 })
 
 const convertList = computed(() => {
-  Object.assign(
-    filtersList,
-    Object.entries(data.value[0]).reduce((acc, [key, value]) => {
-      let set = []
-      if (typeof value === 'object') {
-        set = data.value.reduce(
-          (acc, obj) => {
-            if (obj[key].min !== undefined && obj[key].max !== undefined) {
-              acc.min.add(obj[key].min)
-              acc.max.add(obj[key].max)
-            } else if (obj[key].default !== undefined) {
-              acc.default.add(obj[key].default)
-            }
-            return acc
-          },
-          { default: new Set(), min: new Set(), max: new Set() }
-        )
-        if (set.min.size + set.max.size + set.default.size === 0) return acc
-        acc[key] = {
-          default: Array.from(set.default),
-          min: Array.from(set.min),
-          max: Array.from(set.max)
-        }
-      } else {
-        set = new Set(
-          data.value.map((obj) => (typeof obj[key] === 'object' ? undefined : obj[key]))
-        )
-        set.delete(undefined)
-        set = Array.from(set)
-        if (set.length !== 1 && set[0] !== null) {
-          acc[key] = set
-        }
+  filtersList.value = Object.entries(data.value[0]).reduce((acc, [key, value]) => {
+    let set = []
+    if (typeof value === 'object') {
+      set = data.value.reduce(
+        (acc, obj) => {
+          if (obj[key].min !== undefined && obj[key].max !== undefined) {
+            acc.min.add(obj[key].min)
+            acc.max.add(obj[key].max)
+          } else if (obj[key].default !== undefined) {
+            acc.default.add(obj[key].default)
+          }
+          return acc
+        },
+        { default: new Set(), min: new Set(), max: new Set() }
+      )
+      if (set.min.size + set.max.size + set.default.size === 0) return acc
+      acc[key] = {
+        default: Array.from(set.default),
+        min: Array.from(set.min),
+        max: Array.from(set.max)
       }
-      return acc
-    }, {})
-  )
-  keys.value = Object.keys(filtersList).filter(
-    (data) => Array.isArray(filtersList[data]) && data.length < 17
+    } else {
+      set = new Set(
+        data.value.map((obj) => (typeof obj[key] === 'object' ? undefined : obj[key]))
+      )
+      set.delete(undefined)
+      set = Array.from(set)
+      if (set.length !== 1 && set[0] !== null) {
+        acc[key] = set
+      }
+    }
+    return acc
+  }, {})
+  keys.value = Object.keys(filtersList.value).filter(
+    (data) => Array.isArray(filtersList.value[data]) && data.length < 17
   )
 })
 
-watch(emit.part, (newValue, oldValue) => {
+watch(() => props.part, (newVal, oldValue) => {
+  selectedFilters.value = {}
+  filtersList.value = {}
+  keys.value = []
   createData.value
   convertList.value
-  Object.assign(selectedFilters, {})
   currentCount.value = 200
-})
+}, { deep: true })
 
 onMounted(() => {
   createData.value

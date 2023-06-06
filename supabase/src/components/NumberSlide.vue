@@ -22,83 +22,84 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'NumberSlider',
-  emits: ['change'],
-  data() {
-    return {
-      minValue: 0,
-      maxValue: 100000,
-      valueGap: 10,
-      totalValue: 1000000000000000,
-      tempSymbol: false
-    }
+<script setup>
+import { ref, reactive, defineProps, defineEmits, computed, watch, onMounted } from 'vue'
+
+const props = defineProps({
+  valueList: {
+    type: Array,
+    required: true
   },
-  props: {
-    valueList: {
-      type: Array,
-      required: true
-    },
-    symbol: {
-      type: String,
-      required: false
-    }
-  },
-  methods: {
-    genValue(value) {
-      try {
-        return value > 10000 ? value.toExponential(2) : value
-      } catch (error) {
-        value = value / 1000000000
-        this.tempSymbol = 'GB:'
-        return value > 10000 ? value.toExponential(2) : Math.round(value)
-      }
-    }
-  },
-  computed: {
-    progressWidth() {
-      return `left: ${(this.minValue / this.totalValue) * 100}%; right: ${100 - (this.maxValue / this.totalValue) * 100
-        }%;`
-    },
-    greatestValue() {
-      this.minValue = 0
-      if (Math.max(...this.valueList) < 3) {
-        this.totalValue = Math.ceil(Math.max(...this.valueList) * 100) / 100
-        this.valueGap = Math.round(this.totalValue * 10) / 100
-        this.maxValue = this.totalValue
-        return
-      } else if (Math.max(...this.valueList) <= 10) {
-        this.totalValue = Math.ceil(Math.max(...this.valueList) / 10) * 10
-      } else if (Math.max(...this.valueList) < 800) {
-        this.totalValue = Math.ceil(Math.max(...this.valueList) / 100) * 100
-      } else {
-        this.totalValue = Math.ceil(Math.max(...this.valueList) / 1000) * 1000
-      }
-      this.valueGap = Math.round(this.totalValue / 10)
-      this.maxValue = this.totalValue
-    }
-  },
-  watch: {
-    valueList(newVal, oldVal) {
-      this.greatestValue
-    },
-    minValue(newVal, oldVal) {
-      if (newVal < 0) this.minValue = 0
-      if (newVal > this.maxValue - this.valueGap) this.minValue = this.maxValue - this.valueGap
-      this.$emit('change', { max: parseFloat(this.maxValue), min: parseFloat(this.minValue) })
-    },
-    maxValue(newVal, oldVal) {
-      if (this.maxValue < parseFloat(this.minValue) + this.valueGap)
-        this.maxValue = parseFloat(this.minValue) + this.valueGap
-      if (newVal > this.totalValue) this.maxValue = this.totalValue
-      this.$emit('change', { max: parseFloat(this.maxValue), min: parseFloat(this.minValue) })
-    }
-  },
-  mounted() {
-    this.greatestValue
+  symbol: {
+    type: String,
+    required: false
+  }
+})
+
+const emit = defineEmits(['change'])
+
+const original = 1000000000000000
+const minValue = ref(0)
+const maxValue = ref(1000000000000000)
+const valueGap = ref(10)
+const totalValue = ref(1000000000000000)
+const tempSymbol = ref(false)
+
+function genValue(value) {
+  value = parseFloat(value)
+  tempSymbol.value = false
+  if (parseFloat(value) < 1000000000 || value === 1000000000000000) {
+    return value > 10000 ? value.toExponential(2) : value
+  } else {
+    value = value / 1000000000
+    tempSymbol.value = 'GB:'
+    return value > 10000 ? value.toExponential(2) : Math.round(value)
   }
 }
+
+const progressWidth = computed(() => {
+  return `left: ${(minValue.value / totalValue.value) * 100}%; right: ${100 - (maxValue.value / totalValue.value) * 100
+    }%;`
+})
+
+const greatestValue = computed(() => {
+  minValue.value = 0
+  if (Math.max(...props.valueList) < 3) {
+    totalValue.value = Math.ceil(Math.max(...props.valueList) * 100) / 100
+    valueGap.value = Math.round(totalValue.value * 10) / 100
+    maxValue.value = totalValue.value
+    return
+  } else if (Math.max(...props.valueList) <= 10) {
+    totalValue.value = Math.ceil(Math.max(...props.valueList) / 10) * 10
+  } else if (Math.max(...props.valueList) < 800) {
+    totalValue.value = Math.ceil(Math.max(...props.valueList) / 100) * 100
+  } else {
+    totalValue.value = Math.ceil(Math.max(...props.valueList) / 1000) * 1000
+  }
+  if (totalValue.value === 1000000000000000) {
+    greatestValue.value
+  }
+  valueGap.value = Math.round(totalValue.value / 10)
+  maxValue.value = totalValue.value
+})
+
+watch(() => props.valueList, (newVal, oldVal) => {
+  greatestValue.value
+}, { deep: true })
+
+watch(minValue, (newVal, oldVal) => {
+  if (newVal < 0) minValue.value = 0
+  if (newVal > maxValue.value - valueGap.value) minValue.value = maxValue.value - valueGap.value
+  emit('change', { max: parseFloat(maxValue.value), min: parseFloat(minValue.value) })
+}, { deep: true })
+
+watch(maxValue, (newVal, oldVal) => {
+  if (maxValue.value < parseFloat(minValue.value) + valueGap.value)
+    maxValue.value = parseFloat(minValue.value) + valueGap.value
+  if (newVal > totalValue.value) maxValue.value = totalValue.value
+  emit('change', { max: parseFloat(maxValue.value), min: parseFloat(minValue.value) })
+}, { deep: true })
+
 </script>
 <style scoped>
 .wrapper {

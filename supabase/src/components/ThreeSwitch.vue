@@ -6,32 +6,30 @@
   </div>
 </template>
 
-<script>
-export default {
-  emits: ['select'],
-  data() {
-    return {
-      state: 'left'
-    }
-  },
-  methods: {
-    toggleLeft() {
-      this.state = 'left'
-      this.$emit('select', 'all')
-    },
-    toggleMiddle() {
-      this.state = 'middle'
-      this.$emit('select', 'minMax')
-    },
-    toggleRight() {
-      this.state = 'right'
-      this.$emit('select', 'default')
-    }
-  },
-  mounted() {
-    this.$emit('select', 'all')
-  }
+<script setup>
+import { ref, defineProps, defineEmits, computed, watch, onMounted } from 'vue'
+
+const emit = defineEmits(['select'])
+
+const state = ref('left')
+
+function toggleLeft() {
+  state.value = 'left'
+  emit('select', 'all')
 }
+
+function toggleMiddle() {
+  state.value = 'middle'
+  emit('select', 'minMax')
+}
+function toggleRight() {
+  state.value = 'right'
+  emit('select', 'default')
+}
+
+onMounted(() => {
+  emit('select', 'all')
+}) 
 </script>
 
 <style scoped>

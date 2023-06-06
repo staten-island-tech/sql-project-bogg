@@ -1,15 +1,12 @@
 <template>
   <div class="build-container">
     <h2 v-if="$route.name === 'new'">New Build</h2>
-    <h2 v-else>Build: {{ $route.params.name }}</h2>
-    <h2>Total Price: ${{ totalPrice.toFixed(2) }}</h2>
+    <h2 v-else>Build: {{ props.name }}</h2>
+    <h2>Total Price: ${{ props.buildList === undefined ? 0 : totalPrice.toFixed(2) }}</h2>
 
     <ul>
       <li v-for="([component, item], index) in Object.entries(buildList)" :key="component">
-        <button
-          @click="$emit('changeDisplay', index)"
-          :class="current === index ? 'selected' : 'none'"
-        >
+        <button @click="$emit('changeDisplay', index)" :class="current === index ? 'selected' : 'none'">
           <p class="component">
             {{
               component
@@ -32,12 +29,13 @@
       <input placeholder="Name of Build" v-model="input" />
     </div>
     <button class="commit extra" @click="commit">{{ save }}</button>
-    <button v-if="$route.name !== 'new'" class="remove extra" @click="remove">Remove</button>
+    <button v-if="route.name !== 'new'" class="remove extra" @click="remove">Remove</button>
   </div>
 </template>
 <script setup>
 import { ref, reactive, defineProps, defineEmits, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { supabase } from '../lib/supabaseClient'
 
 const props = defineProps({
   buildList: {
@@ -46,6 +44,10 @@ const props = defineProps({
   },
   current: {
     type: Number,
+    required: true
+  },
+  name: {
+    type: String,
     required: true
   }
 })
@@ -57,31 +59,29 @@ const save = ref('Save Build')
 const input = ref('')
 
 const totalPrice = computed(() => {
-  return Object.values(buildList).reduce(
+  return Object.values(props.buildList).reduce(
     (sum, component) => (component === '' ? sum : sum + component.price),
     0
   )
 })
 
-const commit = computed(() => {
+async function commit() {
   save.value = 'Saved'
-  let current = JSON.parse(localStorage.getItem('builds'))
-  localStorage.removeItem('builds')
-  if (current === undefined || current === null) {
-    current = []
-  }
   if (route.name === 'new') {
     if (input.value === '') {
       input.value = Math.round(Math.random() * 999999).toString()
     }
     input.value = input.value.replaceAll(' ', '')
-    current.push({ name: input.value, build: this.buildList })
+    current.push({ name: input.value, build: props.buildList })
   } else {
-    current = current.filter((obj) => obj.name !== this.$route.params.name)
-    current.push({ name: route.params.builf, build: props.buildList })
+
+    const { data, error } = await supabase
+      .from('builds')
+      .update({ info: props.computerBuild })
+      .eq('id', route.params.build)
+    console.log("Success", error, data)
   }
-  localStorage.setItem('builds', JSON.stringify(current))
-})
+}
 
 const remove = computed(() => {
   let current = JSON.parse(localStorage.getItem('builds'))
@@ -96,18 +96,8 @@ const remove = computed(() => {
 })
 
 watch(props.buildList, (newVal, oldVal) => {
-  this.save = 'Save Build'
-})
-// export default {
-//   watch: {
-//     buildList: {
-//       handler(newVal, oldVal) {
-//         this.save = 'Save Build'
-//       },
-//       deep: true
-//     }
-//   }
-// }
+  save.value = 'Save Build'
+}, { deep: true })
 </script>
 
 <style scoped>

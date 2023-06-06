@@ -5,32 +5,15 @@
     <div class="col-6form-widget">
       <h1 class="header">Sign In</h1>
       <div>
-        <input
-          class="inputField"
-          required
-          type="email"
-          placeholder="Email"
-          v-model="loginEmail"
-          autocomplete="email"
-        />
+        <input class="inputField" required type="email" placeholder="Email" v-model="loginEmail" autocomplete="email" />
       </div>
       <div>
-        <input
-          class="inputField"
-          required
-          type="password"
-          placeholder="Password"
-          v-model="loginPassword"
-          autocomplete="current-password"
-        />
+        <input class="inputField" required type="password" placeholder="Password" v-model="loginPassword"
+          autocomplete="current-password" />
       </div>
       <div>
-        <input
-          type="submit"
-          class="button block"
-          :value="loadingLogin ? 'Logging in...' : 'Sign In'"
-          :disabled="loadingLogin"
-        />
+        <input type="submit" class="button block" :value="loadingLogin ? 'Logging in...' : 'Sign In'"
+          :disabled="loadingLogin" />
       </div>
     </div>
     <h1>Not a member?</h1>
@@ -62,7 +45,6 @@ const handleLogin = async () => {
       throw error
     } else {
       console.log(data, 'loginPage Data')
-      userSession.signedIn = true
     }
   } catch (error) {
     console.log(error)

@@ -1,5 +1,6 @@
 <template>
   <div class="new">
+    <RouterLink :to="'/account/' + userSession.session.user.id" class="home">Home</RouterLink>
     <div class="header">
       <button class="arrow" id="left" @click="changeValue(-1)"></button>
       <h2>
@@ -19,19 +20,12 @@
       <button class="arrow" id="right" @click="changeValue(1)"></button>
     </div>
     <div class="display">
-      <ComponentDisplay
-        @addBuild="updateBuild"
-        class="display"
-        :part="dataList[selectedValue]"
-        :filters="activeFilters"
-      />
+      <ComponentDisplay @addBuild="updateBuild" class="display" :part="dataList[selectedValue]"
+        :filters="activeFilters" />
     </div>
     <div class="build-display">
-      <BuildComp
-        :buildList="computerBuild.value"
-        :current="selectedValue"
-        @changeDisplay="(event) => (selectedValue = event)"
-      />
+      <BuildComp :buildList="computerBuild" :current="selectedValue" :name="name"
+        @changeDisplay="(event) => (selectedValue = event)" />
     </div>
   </div>
 </template>
@@ -39,16 +33,12 @@
 <script setup>
 import BuildComp from '../components/BuildComponent.vue'
 import ComponentDisplay from '../components/ComponentDisplay.vue'
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, reactive } from 'vue'
+import { useRoute, RouterLink } from 'vue-router'
 import { userSessionStore } from '../stores/userSession'
+import { supabase } from '../lib/supabaseClient'
 
-const userSession = userSessionStore()
-const route = useRoute()
-const activeFilters = ref([])
-const computerBuild = ref([])
-const selectedValue = ref(0)
-const dataList = [
+const dataList = ref([
   'caseFan',
   'case',
   'cpu',
@@ -71,30 +61,40 @@ const dataList = [
   'videoCard',
   'wiredNetworkCard',
   'wirelessNetworkCard'
-]
+])
+const userSession = userSessionStore()
+const route = useRoute()
+const activeFilters = ref([])
+const computerBuild = reactive(dataList.value.reduce((acc, item) => {
+  acc[item] = ''
+  return acc
+}, {}))
+const selectedValue = ref(0)
+const name = ref('')
+
 
 function changeValue(num) {
   selectedValue.value += num
-  if (selectedValue.value === -1) selectedValue.value = this.dataList.length - 1
-  else if (selectedValue.value === dataList.length) selectedValue.value = 0
+  if (selectedValue.value === -1) selectedValue.value = dataList.value.length - 1
+  else if (selectedValue.value === dataList.value.length) selectedValue.value = 0
   activeFilters.value = []
 }
 
 function updateBuild(part) {
-  this.changeValue(1)
+  changeValue(1)
 
-  computerBuild.value[part.part] = part.item
+  computerBuild[part.part] = part.item
 }
 
-onMounted(() => {
-  computerBuild.value = dataList.reduce((acc, item) => {
-    acc[item] = ''
-    return acc
-  }, {})
+onMounted(async () => {
   if (route.name !== 'new') {
-    computerBuild.value = JSON.parse(localStorage.getItem('builds')).filter(
-      (obj) => obj.name === route.params.build
-    )[0].build
+    let { data: info, error } = await supabase
+      .from('builds')
+      .select('name, info')
+      .eq('id', route.params.build)
+    Object.assign(computerBuild, info[0].info)
+    name.value = info[0].name
+    console.log(name.value)
   }
 })
 </script>
@@ -109,9 +109,17 @@ onMounted(() => {
 .new {
   display: grid;
   grid-template:
+    'home home'
     'header build'
     'display build';
   margin: 10px;
+}
+
+.home {
+  grid-area: home;
+  font-size: 20px;
+  display: block;
+  width: 10rem;
 }
 
 .header {
