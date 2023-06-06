@@ -4,7 +4,12 @@
     <div class="head">
       <div class="key keym">Add</div>
       <div class="head-container">
-        <div v-for="(key, index) in keys" :key="key" class="key" :style="'width: ' + 100 / keys.length + '%;'">
+        <div
+          v-for="(key, index) in keys"
+          :key="key"
+          class="key"
+          :style="'width: ' + 100 / keys.length + '%;'"
+        >
           <p class="key-text">
             {{
               key
@@ -21,7 +26,12 @@
       </div>
     </div>
     <div class="filters">
-      <FilterComponent :list="filtersList" @filterControl="manageFilters" @valueChange="filterValue" />
+      <FilterComponent
+        :list="filtersList"
+        @filterControl="manageFilters"
+        @valueChange="filterValue"
+        @switchChange="switchChange"
+      />
     </div>
     <ul class="main">
       <li v-for="component in filteredData.slice(0, currentCount)" :key="component">
@@ -31,8 +41,8 @@
         <div class="parent">
           <div class="child-subkey">
             <p v-for="value in keys" class="subkey" :style="'width: ' + 100 / keys.length + '%;'">
-              {{ value === "price" ? "$" : "" }}{{ JSON.stringify(component[value]) !== '{}' ? component[value] : 'None'
-              }}
+              {{ value === 'price' ? '$' : ''
+              }}{{ JSON.stringify(component[value]) !== '{}' ? component[value] : 'None' }}
             </p>
           </div>
         </div>
@@ -84,9 +94,9 @@ function manageFilters(filter) {
 function filterValue(data) {
   if (data.objKey !== undefined) {
     if (selectedFilters.value[data.key] === undefined) {
-      selectedFilters.value[data.key] = { all: {}, min: {}, max: {}, default: {}, current: '' }
+      selectedFilters.value[data.key] = { values: {}, current: '' }
     }
-    selectedFilters.value[data.key][data.objKey] = data.values
+    selectedFilters.value[data.key].values = data.values
     selectedFilters.value[data.key].current = data.objKey
   } else {
     selectedFilters.value[data.key] = data.values
@@ -122,14 +132,21 @@ const createData = computed(() => {
   })
 })
 
+function switchChange(data) {
+  if (selectedFilters.value[data.key] === undefined) {
+    selectedFilters.value[data.key] = { values: {}, current: '' }
+  }
+  selectedFilters.value[data.key].values = data.values
+  selectedFilters.value[data.key].current = data.objKey
+}
+
 const filteredData = computed(() => {
-  let temp = [];
   return data.value.filter((data) => {
     for (const [key, value] of Object.entries(selectedFilters.value)) {
       const dataValue = data[key]
       if (typeof value === 'object' && value.all !== undefined) {
-        temp.push(dataValue)
-        if (value.current === 'min' || value.current === 'max') {
+        if (value.current === 'minMax') {
+          console.log(dataValue.min === undefined)
           if (
             dataValue.min === undefined ||
             dataValue.min < value.min.min ||
@@ -145,11 +162,6 @@ const filteredData = computed(() => {
             dataValue.default > value.default.max
           )
             return false
-          if (dataValue.default === undefined) {
-            if (dataValue.min < value.all.min || dataValue.max > value.all.max) return false
-          } else {
-            if (dataValue.default < value.all.min || dataValue.default > value.all.max) return false
-          }
         } else {
           if (dataValue.default === undefined) {
             if (dataValue.min < value.all.min || dataValue.max > value.all.max) return false
@@ -190,9 +202,7 @@ const convertList = computed(() => {
         max: Array.from(set.max)
       }
     } else {
-      set = new Set(
-        data.value.map((obj) => (typeof obj[key] === 'object' ? undefined : obj[key]))
-      )
+      set = new Set(data.value.map((obj) => (typeof obj[key] === 'object' ? undefined : obj[key])))
       set.delete(undefined)
       set = Array.from(set)
       if (set.length !== 1 && set[0] !== null) {
@@ -206,14 +216,18 @@ const convertList = computed(() => {
   )
 })
 
-watch(() => props.part, (newVal, oldValue) => {
-  selectedFilters.value = {}
-  filtersList.value = {}
-  keys.value = []
-  createData.value
-  convertList.value
-  currentCount.value = 200
-}, { deep: true })
+watch(
+  () => props.part,
+  (newVal, oldValue) => {
+    selectedFilters.value = {}
+    filtersList.value = {}
+    keys.value = []
+    createData.value
+    convertList.value
+    currentCount.value = 200
+  },
+  { deep: true }
+)
 
 onMounted(() => {
   createData.value

@@ -6,7 +6,10 @@
 
     <ul>
       <li v-for="([component, item], index) in Object.entries(buildList)" :key="component">
-        <button @click="$emit('changeDisplay', index)" :class="current === index ? 'selected' : 'none'">
+        <button
+          @click="$emit('changeDisplay', index)"
+          :class="current === index ? 'selected' : 'none'"
+        >
           <p class="component">
             {{
               component
@@ -72,32 +75,36 @@ async function commit() {
       input.value = Math.round(Math.random() * 999999).toString()
     }
     input.value = input.value.replaceAll(' ', '')
-    current.push({ name: input.value, build: props.buildList })
   } else {
-
     const { data, error } = await supabase
       .from('builds')
       .update({ info: props.computerBuild })
       .eq('id', route.params.build)
-    console.log("Success", error, data)
+    console.log('Success', error, data)
   }
 }
-
-const remove = computed(() => {
+async function remove() {
   let current = JSON.parse(localStorage.getItem('builds'))
   localStorage.removeItem('builds')
   if (window.confirm('Are you sure you want to delete this build?')) {
     current = current.filter((value) => value.name !== route.params.build)
     localStorage.setItem('builds', JSON.stringify(current))
+
+    const { data, error } = await supabase.from('builds').delete().eq('id', route.params.build)
+    console.log('Success', error, data)
     window.location.href = window.location.href.split(/\/build|\/new/)[0]
   } else {
     localStorage.setItem('builds', JSON.stringify(current))
   }
-})
+}
 
-watch(props.buildList, (newVal, oldVal) => {
-  save.value = 'Save Build'
-}, { deep: true })
+watch(
+  props.buildList,
+  (newVal, oldVal) => {
+    save.value = 'Save Build'
+  },
+  { deep: true }
+)
 </script>
 
 <style scoped>
