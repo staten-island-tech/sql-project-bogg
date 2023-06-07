@@ -14,6 +14,7 @@
         </RouterLink>
       </div>
       <button @click="logout" class="logout">Logout</button>
+      <button @click="deleteUser">delete account</button>
     </nav>
   </main>
 </template>
@@ -47,6 +48,27 @@ async function logout() {
   }
 }
 
+async function deleteUser() {
+  if (
+    window.confirm('Are you sure you want to delete your account? This action cannot be undone.')
+  ) {
+    try {
+      const { data, error } = await supabase.auth.admin.deleteUser(userSession.session.user.id)
+      if (error) {
+        console.error(error)
+        return
+      }
+      alert('User deleted successfully')
+      console.log('User deleted successfully')
+      router.push('/')
+      // Perform additional actions or show success message
+    } catch (error) {
+      console.error(error)
+    }
+  } else {
+  }
+}
+
 onMounted(async () => {
   let { data: info, error } = await supabase
     .from('builds')
@@ -60,7 +82,7 @@ onMounted(async () => {
     .eq('email', userSession.session.user.email)
     .single()
   user.value = userData
-  console.log(info, userSession.session, userData)
+  console.log(info, userSession.session.user.id, userData)
 })
 </script>
 <style>
