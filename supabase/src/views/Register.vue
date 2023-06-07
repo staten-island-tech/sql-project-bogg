@@ -77,7 +77,10 @@ const handleRegister = async () => {
     } else {
       const { data, error } = await supabase.auth.signUp({
         email: registerEmail.value,
-        password: registerPassword.value
+        password: registerPassword.value,
+        options: {
+          data: { username: registerUsername.value }
+        }
       })
 
       if (error) {
