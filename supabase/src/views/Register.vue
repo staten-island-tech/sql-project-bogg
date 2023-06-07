@@ -67,7 +67,7 @@ const handleRegister = async () => {
 
     // Check if user with the provided email already exists
     const { data: usersData, error: usersError } = await supabase
-      .from('users')
+      .from('profiles')
       .select()
       .eq('email', registerEmail.value)
 
@@ -87,20 +87,6 @@ const handleRegister = async () => {
         console.log(error)
       } else {
         console.log(data)
-
-        // Insert the user's email and username into the users table
-        await supabase.from('users').insert([
-          {
-            email: registerEmail.value,
-            username: registerUsername.value,
-            Userid: null
-          }
-        ])
-        if (error) {
-          console.log(error)
-        } else {
-        }
-
         alert('Please check your email for confirmation.')
       }
     }

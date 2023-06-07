@@ -55,13 +55,12 @@ onMounted(async () => {
   builds.value = info
 
   const { data: userData, error: usersError } = await supabase
-    .from('users')
+    .from('profiles')
     .select('email, username')
     .eq('email', userSession.session.user.email)
     .single()
   user.value = userData
   console.log(info, userSession.session, userData)
-
 })
 </script>
 <style>
@@ -89,15 +88,15 @@ main {
 }
 
 .logout {
-  background: #FF4742;
-  border: 1px solid #FF4742;
+  background: #ff4742;
+  border: 1px solid #ff4742;
   border-radius: 6px;
   box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
   box-sizing: border-box;
-  color: #FFFFFF;
+  color: #ffffff;
   cursor: pointer;
   display: inline-block;
-  font-family: nunito, roboto, proxima-nova, "proxima nova", sans-serif;
+  font-family: nunito, roboto, proxima-nova, 'proxima nova', sans-serif;
   font-size: 16px;
   font-weight: 800;
   line-height: 16px;
@@ -119,11 +118,11 @@ main {
 .logout:active {
   background-color: initial;
   background-position: 0 0;
-  color: #FF4742;
+  color: #ff4742;
 }
 
 .logout:active {
-  opacity: .5;
+  opacity: 0.5;
 }
 
 @media (prefers-color-scheme: dark) {
