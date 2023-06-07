@@ -1,6 +1,10 @@
 <template>
   <div class="new">
-    <RouterLink :to="'/account/' + userSession.session.user.id" class="home">Home</RouterLink>
+    <RouterLink
+      :to="userSession.session ? '/account/' + userSession.session.user.id : '/account/123'"
+      class="home"
+      >Home</RouterLink
+    >
     <div class="header">
       <button class="arrow" id="left" @click="changeValue(-1)"></button>
       <h2>
@@ -20,12 +24,20 @@
       <button class="arrow" id="right" @click="changeValue(1)"></button>
     </div>
     <div class="display">
-      <ComponentDisplay @addBuild="updateBuild" class="display" :part="dataList[selectedValue]"
-        :filters="activeFilters" />
+      <ComponentDisplay
+        @addBuild="updateBuild"
+        class="display"
+        :part="dataList[selectedValue]"
+        :filters="activeFilters"
+      />
     </div>
     <div class="build-display">
-      <BuildComp :buildList="computerBuild" :current="selectedValue" :name="name"
-        @changeDisplay="(event) => (selectedValue = event)" />
+      <BuildComp
+        :buildList="computerBuild"
+        :current="selectedValue"
+        :name="name"
+        @changeDisplay="(event) => (selectedValue = event)"
+      />
     </div>
   </div>
 </template>
@@ -65,13 +77,14 @@ const dataList = ref([
 const userSession = userSessionStore()
 const route = useRoute()
 const activeFilters = ref([])
-const computerBuild = reactive(dataList.value.reduce((acc, item) => {
-  acc[item] = ''
-  return acc
-}, {}))
+const computerBuild = reactive(
+  dataList.value.reduce((acc, item) => {
+    acc[item] = ''
+    return acc
+  }, {})
+)
 const selectedValue = ref(0)
 const name = ref('')
-
 
 function changeValue(num) {
   selectedValue.value += num

@@ -16,6 +16,7 @@ const session = ref()
 const showRegister = ref(false)
 
 supabase.auth.onAuthStateChange((event, session) => {
+  console.log(event)
   userSession.session = session
   // console.log(event, "its working", userSession, userSession.signedIn)
   // if (userSession.session !== null) {
