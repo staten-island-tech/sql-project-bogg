@@ -64,7 +64,6 @@ const handleRegister = async () => {
       if (error) {
         console.log(error)
       } else {
-        console.log(data)
         alert('Please check your email for confirmation.')
       }
     }

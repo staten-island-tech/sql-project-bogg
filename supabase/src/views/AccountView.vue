@@ -34,11 +34,9 @@ onMounted(async () => {
             .select('username')
             .eq('id', route.params.id)
             .single()
-        console.log(pull)
         username.value = pull.username
     } else {
         username.value = pull[0].profiles.username
-        console.log(data.value)
     }
 })
 </script>

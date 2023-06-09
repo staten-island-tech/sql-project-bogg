@@ -58,7 +58,6 @@ async function deleteUser() {
         return
       }
       alert('User deleted successfully')
-      console.log('User deleted successfully')
       router.push('/')
     } catch (error) {
       console.error(error)

@@ -91,7 +91,6 @@ function updateBuild(part) {
   changeValue(1)
 
   computerBuild[part.part] = part.item
-  console.log(computerBuild)
 }
 
 onMounted(async () => {
