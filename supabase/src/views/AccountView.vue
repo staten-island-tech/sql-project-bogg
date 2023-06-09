@@ -4,16 +4,16 @@
 
         <h1>{{ username }}'s Builds'</h1>
         <div class="parent">
-            <RouterLink :to="'/build/' + build.id" class="child" v-for="build in data" :key="build.id">
+            <RouterLink :to="'/build/' + build.id" class="child" v-for="build in data" :key="build.id"
+                v-if="data.length > 0">
                 <p class="name">{{ build.name }}</p>
                 <p class="description"></p>
             </RouterLink>
+            <p v-else>No builds avaliable.</p>
         </div>
     </div>
 </template>
 <script setup>
-import BuildComp from '../components/BuildComponent.vue'
-import ComponentDisplay from '../components/ComponentDisplay.vue'
 import { ref, onMounted, reactive } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { userSessionStore } from '../stores/userSession'
@@ -54,6 +54,10 @@ onMounted(async () => {
 
 body {
     font-family: "Open Sans", sans-serif;
+}
+
+p {
+    font-size: 2rem;
 }
 
 .container {

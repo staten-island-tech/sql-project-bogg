@@ -98,6 +98,7 @@ function increaseCount() {
 }
 
 const createData = computed(() => {
+  console.log(importedData[props.part])
   data.value = importedData[props.part].data.map((data) => {
     return Object.entries(data).reduce((acc, [key, value]) => {
       if (typeof value === 'object') {
@@ -119,6 +120,7 @@ const createData = computed(() => {
       return acc
     }, {})
   })
+  console.log(data.value)
 })
 
 const filteredData = computed(() => {

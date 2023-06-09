@@ -1,4 +1,5 @@
 <template>
+  <RouterLink to="/" class="home-page">Home</RouterLink>
   <main>
     <h1>Welcome {{ user.username }}</h1>
     <nav>
@@ -7,7 +8,7 @@
         <RouterLink :to="'/build/edit/' + build.id" class="child" v-for="build in builds">
           <p class="name">{{ build.name }}</p>
         </RouterLink>
-        <RouterLink :to="`/${userSession.session.user.id}/new`" class="child new">
+        <RouterLink :to="userSession.session ? `/${userSession.session.user.id}/new` : '/'" class="child new">
           <p class="name">New</p>
         </RouterLink>
       </div>
@@ -67,6 +68,10 @@ async function deleteUser() {
 }
 
 onMounted(async () => {
+  if (!userSession.session) {
+    router.push('/login')
+    return
+  }
   const { data: userData, error: usersError } = await supabase
     .from('builds')
     .select('*, profiles(username,id)')
@@ -93,10 +98,19 @@ body {
 }
 
 main {
-  height: 100vh;
+  height: 97vh;
   padding-top: 1rem;
   width: 80vw;
   text-align: center;
+}
+
+.home-page {
+  font-size: 20px;
+  display: fixed;
+  width: 5.5rem;
+  height: fit-content;
+  top: 1rem;
+  left: 0rem;
 }
 
 .logout {

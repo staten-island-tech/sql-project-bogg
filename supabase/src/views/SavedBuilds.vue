@@ -1,7 +1,12 @@
 <template>
   <div class="new">
-    <RouterLink :to="userSession.session ? '/account/' + userSession.session.user.id : '/account/123'" class="home">Home
-    </RouterLink>
+    <nav>
+      <RouterLink to="/" class="home">Home</RouterLink>
+      <p>></p>
+      <RouterLink :to="userSession.session ? '/account/' + userSession.session.user.id : '/account/123'" class="back">
+        Account
+      </RouterLink>
+    </nav>
     <div class="header">
       <button class="arrow" id="left" @click="changeValue(-1)"></button>
       <h2>
@@ -86,6 +91,7 @@ function updateBuild(part) {
   changeValue(1)
 
   computerBuild[part.part] = part.item
+  console.log(computerBuild)
 }
 
 onMounted(async () => {
@@ -94,8 +100,9 @@ onMounted(async () => {
       .from('builds')
       .select('name, info')
       .eq('id', route.params.build)
-    Object.assign(computerBuild, info[0].info)
-    name.value = info[0].name
+      .single()
+    Object.assign(computerBuild, info.info)
+    name.value = info.name
   }
 })
 </script>
@@ -116,11 +123,24 @@ onMounted(async () => {
   margin: 10px;
 }
 
-.home {
-  grid-area: home;
+.home,
+.back {
   font-size: 20px;
-  display: block;
+  display: inline-block;
   width: 5.5rem;
+}
+
+.back {
+  width: 7rem;
+}
+
+nav {
+  display: flex;
+  grid-area: home;
+}
+
+nav p {
+  font-size: 2rem;
 }
 
 .header {

@@ -4,13 +4,14 @@
         <p>></p>
         <RouterLink to="/" class="back">Back</RouterLink>
         <h1>
-            {{ data.name }} made by {{ data.profiles.username }}
+            {{ data.name }}
         </h1>
+        <p class="author">Made by {{ data.profiles.username }}</p>
         <div v-for="[key, value] in Object.entries(data.info)" class="component">
             <h2>
                 {{ key.split(/(?=[A-Z])/)
                     .map((string) =>
-                        string.match(/\b(rpm|cpu|pwm|psu|tdp|gb|cas|ram|dpi|dvd|cd|snr|va)\b/i)
+                        string.match(/\b(rpm|ups|cpu|pwm|psu|tdp|gb|cas|ram|dpi|dvd|cd|snr|va)\b/i)
                             ? string.toUpperCase()
                             : string[0].toUpperCase() + string.substring(1)
 
@@ -31,8 +32,11 @@
                             .join(' ')
                     }}
                 </p>
-                <p>
+                <p v-if="(typeof value !== 'object')">
                     : {{ value }}
+                </p>
+                <p v-else>
+                    : {{ objectControl(value) }}
                 </p>
             </div>
         </div>
@@ -43,11 +47,21 @@ import { ref, onMounted, reactive } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { userSessionStore } from '../stores/userSession'
 import { supabase } from '../lib/supabaseClient'
-import DropDown from '../components/DropDown.vue'
 
 const route = useRoute()
 const data = ref({ info: {}, profiles: { username: {} } })
 const username = ref('')
+
+function objectControl(value) {
+    if (value.default !== undefined) {
+        return `Default: ${value.default}`
+    } else if (value.min !== undefined) {
+        return `Min: ${value.min}, Max: ${value.max}`
+    } else {
+        return 'Unknown/None'
+    }
+}
+
 onMounted(async () => {
     const { data: pull, error } = await supabase
         .from('builds')
@@ -55,14 +69,9 @@ onMounted(async () => {
         .eq('id', route.params.id)
         .single()
     data.value = pull
-    console.log(data.value)
 })
 </script>
 <style scoped>
-body {
-    font-family: "Open Sans", sans-serif;
-}
-
 .home,
 .back {
     grid-area: home;
@@ -72,10 +81,17 @@ body {
 }
 
 .build-container {
-    width: 100%;
+    width: 80rem;
     height: 99vh;
-    /* wrap: wrap; */
     flex-wrap: wrap;
+    padding: 2rem;
+    padding-bottom: 5rem;
+}
+
+.author {
+    display: block;
+    margin-bottom: 1rem;
+    text-align: center;
 }
 
 h2 {
@@ -88,6 +104,9 @@ h2 {
     width: 100%;
     text-align: left;
     align-items: left;
+    margin-bottom: 2rem;
+    border: blue solid 2px;
+    padding-left: 2rem;
 }
 
 p {
