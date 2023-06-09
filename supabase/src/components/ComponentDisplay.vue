@@ -205,6 +205,7 @@ const convertList = computed(() => {
 watch(
   () => props.part,
   async (newVal, oldValue) => {
+    importedData.value = {}
     importedData.value = await fetch(`https://gnxlyuryauoscxoqyjcz.supabase.co/storage/v1/object/public/componentData/data/${props.part}.json`).then(data => data.json())
     selectedFilters.value = {}
     filtersList.value = {}
