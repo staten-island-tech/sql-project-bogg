@@ -38,7 +38,7 @@
         </div>
       </li>
       <div class="showMore">
-        <button v-if="currentCount < filteredData.length" @click="increaseCount">Show More</button>
+        <button v-if="getLength" @click="increaseCount">Show More</button>
       </div>
     </ul>
   </div>
@@ -46,9 +46,10 @@
 
 <script setup>
 import FilterComponent from './FilterComponent.vue'
-import * as importedData from '../data/index.js'
+import * as allData from '../data/index.js'
 import { ref, defineProps, defineEmits, computed, watch, onMounted } from 'vue'
 
+const importedData = ref(allData)
 const props = defineProps({
   part: {
     type: String,
@@ -81,6 +82,10 @@ function manageFilters(filter) {
   if (selectedFilters.value[filter[0]].length === 0) delete selectedFilters.value[filter[0]]
 }
 
+function getLength() {
+  return currentCount.value < importedData.value[props.part].data.length
+}
+
 function filterValue(data) {
   if (selectedFilters.value[data.key] === undefined) {
     selectedFilters.value[data.key] = { values: {}, current: '' }
@@ -93,12 +98,13 @@ function filterValue(data) {
 }
 
 function increaseCount() {
-  if (currentCount.value < data.value.length) currentCount.value += 200
-  else currentCount.value = data.value.length
+  if (currentCount.value < importedData.value[props.part].data.length) currentCount.value += 200
+  else currentCount.value = importedData.value[props.part].data.length
+  createData.value
 }
 
 const createData = computed(() => {
-  data.value = importedData[props.part].data.map((data) => {
+  data.value = importedData.value[props.part].data.splice(0, currentCount.value).map((data) => {
     return Object.entries(data).reduce((acc, [key, value]) => {
       if (typeof value === 'object') {
         if (Array.isArray(value)) {
