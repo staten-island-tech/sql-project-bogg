@@ -46,10 +46,11 @@
 
 <script setup>
 import FilterComponent from './FilterComponent.vue'
-import * as allData from '../data/index.js'
 import { ref, defineProps, defineEmits, computed, watch, onMounted } from 'vue'
+// import * as allData from '../data/index.js'
+import { supabase } from '../lib/supabaseClient'
 
-const importedData = ref(allData)
+const importedData = ref({ data: [] })
 const props = defineProps({
   part: {
     type: String,
@@ -104,7 +105,7 @@ function increaseCount() {
 }
 
 const createData = computed(() => {
-  data.value = importedData.value[props.part].data.splice(0, currentCount.value).map((data) => {
+  data.value = importedData.value.data.splice(0, currentCount.value).map((data) => {
     return Object.entries(data).reduce((acc, [key, value]) => {
       if (typeof value === 'object') {
         if (Array.isArray(value)) {
@@ -203,20 +204,32 @@ const convertList = computed(() => {
 
 watch(
   () => props.part,
-  (newVal, oldValue) => {
+  async (newVal, oldValue) => {
+    importedData.value = await fetch(`https://gnxlyuryauoscxoqyjcz.supabase.co/storage/v1/object/public/componentData/data/${props.part}.json`).then(data => data.json())
     selectedFilters.value = {}
     filtersList.value = {}
     keys.value = []
     createData.value
     convertList.value
     currentCount.value = 200
+
   },
   { deep: true }
 )
 
-onMounted(() => {
+onMounted(async () => {
+  console.log(props.part)
+  if (props.part !== undefined) {
+    importedData.value = await fetch(`https://gnxlyuryauoscxoqyjcz.supabase.co/storage/v1/object/public/componentData/data/${props.part}.json`)
+      .then(data => data.json())
+  } else {
+    importedData.value = await fetch(`https://gnxlyuryauoscxoqyjcz.supabase.co/storage/v1/object/public/componentData/data/caseFan.json`).then(data => data.json())
+
+  }
+  console.log(importedData.value)
   createData.value
   convertList.value
+
 })
 </script>
 <style scoped>

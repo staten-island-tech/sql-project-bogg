@@ -75,8 +75,17 @@ onMounted(async () => {
     .from('builds')
     .select('*, profiles(username,id)')
     .eq('user_id', userSession.session.user.id)
-  user.value = userData[0].profiles
-  builds.value = userData
+  if (userData.length !== 0) {
+    user.value = userData[0].profiles
+    builds.value = userData
+  } else {
+    const { data: profiles, error: usersError } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', userSession.session.user.id)
+      .single()
+    user.value.username = profiles.username
+  }
 })
 </script>
 <style>
