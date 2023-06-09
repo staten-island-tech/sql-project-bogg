@@ -4,12 +4,7 @@
     <div class="head">
       <div class="key keym">Add</div>
       <div class="head-container">
-        <div
-          v-for="(key, index) in keys"
-          :key="key"
-          class="key"
-          :style="'width: ' + 100 / keys.length + '%;'"
-        >
+        <div v-for="(key, index) in keys" :key="key" class="key" :style="'width: ' + 100 / keys.length + '%;'">
           <p class="key-text">
             {{
               key
@@ -26,12 +21,7 @@
       </div>
     </div>
     <div class="filters">
-      <FilterComponent
-        :list="filtersList"
-        @filterControl="manageFilters"
-        @valueChange="filterValue"
-        @switchChange="switchChange"
-      />
+      <FilterComponent :list="filtersList" @filterControl="manageFilters" @valueChange="filterValue" />
     </div>
     <ul class="main">
       <li v-for="component in filteredData.slice(0, currentCount)" :key="component">
@@ -92,14 +82,13 @@ function manageFilters(filter) {
 }
 
 function filterValue(data) {
-  if (data.objKey !== undefined) {
-    if (selectedFilters.value[data.key] === undefined) {
-      selectedFilters.value[data.key] = { values: {}, current: '' }
-    }
-    selectedFilters.value[data.key].values = data.values
-    selectedFilters.value[data.key].current = data.objKey
+  if (selectedFilters.value[data.key] === undefined) {
+    selectedFilters.value[data.key] = { values: {}, current: '' }
+  }
+  if (data.values === undefined) {
+    selectedFilters.value[data.key].current = data.current
   } else {
-    selectedFilters.value[data.key] = data.values
+    selectedFilters.value[data.key].values = data.values
   }
 }
 
@@ -132,41 +121,31 @@ const createData = computed(() => {
   })
 })
 
-function switchChange(data) {
-  if (selectedFilters.value[data.key] === undefined) {
-    selectedFilters.value[data.key] = { values: {}, current: '' }
-  }
-  selectedFilters.value[data.key].values = data.values
-  selectedFilters.value[data.key].current = data.objKey
-}
-
 const filteredData = computed(() => {
   return data.value.filter((data) => {
     for (const [key, value] of Object.entries(selectedFilters.value)) {
       const dataValue = data[key]
-      if (typeof value === 'object' && value.all !== undefined) {
+
+      if (typeof value === 'object' && value.current !== undefined) {
         if (value.current === 'minMax') {
-          console.log(dataValue.min === undefined)
           if (
             dataValue.min === undefined ||
-            dataValue.min < value.min.min ||
-            dataValue.min > value.min.max ||
-            dataValue.max < value.max.min ||
-            dataValue.max > value.max.max
+            dataValue.min < value.values.min ||
+            dataValue.max > value.values.max
           )
             return false
         } else if (value.current === 'default') {
           if (
             dataValue.default === undefined ||
-            dataValue.default < value.default.min ||
-            dataValue.default > value.default.max
+            dataValue.default < value.values.min ||
+            dataValue.default > value.values.max
           )
             return false
         } else {
           if (dataValue.default === undefined) {
-            if (dataValue.min < value.all.min || dataValue.max > value.all.max) return false
+            if (dataValue.min < value.values.min || dataValue.max > value.values.max) return false
           } else {
-            if (dataValue.default < value.all.min || dataValue.default > value.all.max) return false
+            if (dataValue.default < value.values.min || dataValue.default > value.values.max) return false
           }
         }
       } else if (typeof value === 'object' && !Array.isArray(value)) {

@@ -1,16 +1,10 @@
 <template>
   <h1>Price</h1>
-  <NumberSlide
-    :valueList="props.list.price"
-    symbol="$"
-    @change="(event) => emit('valueChange', { key: 'price', values: event })"
-  />
+  <NumberSlide :valueList="props.list.price" symbol="$"
+    @change="(event) => emit('valueChange', { key: 'price', values: event })" />
 
-  <div
-    class="checkbox-list"
-    v-for="[key, value] in Object.entries(props.list).filter(([key, value]) => key !== 'price')"
-    :key="key"
-  >
+  <div class="checkbox-list" v-for="[key, value] in Object.entries(props.list).filter(([key, value]) => key !== 'price')"
+    :key="key">
     <h1>
       {{
         key
@@ -25,46 +19,29 @@
     </h1>
 
     <label v-if="typeof value === 'object' && !Array.isArray(value)">
-      <ThreeSwitch
-        @select="
-          (event) => {
-            active[key] = event
-            emit('switchChange', { key: key, objKey: active[key] })
-          }
-        "
-      />
-      <NumberSlide
-        :valueList="[...value.min, ...value.max, ...value.default]"
-        symbol=""
-        @change="(event) => emit('valueChange', { key: key, objKey: active[key], values: event })"
-      />
+      <ThreeSwitch @select="
+        (event) => {
+          active[key] = event
+          emit('valueChange', { key: key, current: active[key] })
+        }
+      " />
+      <NumberSlide :valueList="[...value.min, ...value.max, ...value.default]" symbol=""
+        @change="(event) => emit('valueChange', { key: key, values: event })" />
     </label>
 
-    <NumberSlide
-      v-else-if="typeof value[0] === 'number'"
+    <NumberSlide v-else-if="typeof value[0] === 'number'"
       :valueList="value.map((value) => parseFloat(value)).filter((value) => value !== null)"
-      @change="(event) => emit('valueChange', { key: key, values: event })"
-    />
+      @change="(event) => emit('valueChange', { key: key, values: event })" />
 
     <label v-else-if="value.length <= 5" v-for="item in value.sort()" :key="item">
-      <input
-        type="checkbox"
-        name="option3"
-        :value="item"
-        @change="(event) => selectedFilter(event, key, item)"
-      />
+      <input type="checkbox" name="option3" :value="item" @change="(event) => selectedFilter(event, key, item)" />
       <p>{{ item }}</p>
     </label>
 
     <div v-else>
       <label v-for="item in active[key] ? value.sort().slice(0, 5) : value.sort()" :key="item">
-        <input
-          v-if="item !== null"
-          type="checkbox"
-          name="option3"
-          :value="item"
-          @change="(event) => selectedFilter(event, key, item)"
-        />
+        <input v-if="item !== null" type="checkbox" name="option3" :value="item"
+          @change="(event) => selectedFilter(event, key, item)" />
         <p v-if="item !== null">{{ item }}</p>
       </label>
       <button @click="active[key] = !active[key]" class="show">
@@ -86,7 +63,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['filterControl', 'valueChange', 'switchChange'])
+const emit = defineEmits(['filterControl', 'valueChange'])
 
 const active = ref({})
 const price = ref(props.list.price)

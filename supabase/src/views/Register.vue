@@ -4,43 +4,21 @@
     <div class="col-6form-widget">
       <h1 class="header">Create a new account</h1>
       <div>
-        <input
-          class="inputField"
-          required
-          type="text"
-          placeholder="Username"
-          v-model="registerUsername"
-        />
+        <input class="inputField" required type="text" placeholder="Username" v-model="registerUsername" />
       </div>
       <div class="email">
-        <input
-          class="input1Field"
-          required
-          type="email"
-          placeholder="E-mail"
-          v-model="registerEmail"
-          autocomplete="email"
-        />
+        <input class="input1Field" required type="email" placeholder="E-mail" v-model="registerEmail"
+          autocomplete="email" />
         <h5>Note: An account activation email will be sent to the email address you provide.</h5>
       </div>
       <div>
-        <input
-          class="inputField"
-          required
-          type="password"
-          placeholder="Password"
-          v-model="registerPassword"
-          autocomplete="current-password"
-        />
+        <input class="inputField" required type="password" placeholder="Password" v-model="registerPassword"
+          autocomplete="current-password" />
       </div>
 
       <div>
-        <input
-          type="submit"
-          class="button block"
-          :value="loadingRegister ? 'Registering...' : 'Register'"
-          :disabled="loadingRegister"
-        />
+        <input type="submit" class="button block" :value="loadingRegister ? 'Registering...' : 'Register'"
+          :disabled="loadingRegister" />
       </div>
     </div>
     <h1>Already a member?</h1>
@@ -65,15 +43,15 @@ const handleRegister = async () => {
   try {
     loadingRegister.value = true
 
-    // Check if user with the provided email already exists
     const { data: usersData, error: usersError } = await supabase
       .from('profiles')
       .select()
       .eq('email', registerEmail.value)
 
     if (usersData && usersData.length > 0) {
-      // User with the provided email already exists
       alert('Email has already been registered.')
+    } else if (registerPassword.value < 6) {
+      alert('Password must be atleast 6 characters.')
     } else {
       const { data, error } = await supabase.auth.signUp({
         email: registerEmail.value,

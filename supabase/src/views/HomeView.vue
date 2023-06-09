@@ -14,7 +14,7 @@
         </RouterLink>
       </div>
       <button @click="logout" class="logout">Logout</button>
-      <button @click="deleteUser">delete account</button>
+      <button @click="deleteUser" class="logout">Delete Account</button>
     </nav>
   </main>
 </template>
@@ -61,7 +61,6 @@ async function deleteUser() {
       alert('User deleted successfully')
       console.log('User deleted successfully')
       router.push('/')
-      // Perform additional actions or show success message
     } catch (error) {
       console.error(error)
     }
@@ -70,19 +69,12 @@ async function deleteUser() {
 }
 
 onMounted(async () => {
-  let { data: info, error } = await supabase
-    .from('builds')
-    .select('name, info, id')
-    .eq('user_id', userSession.session.user.id)
-  builds.value = info
-
   const { data: userData, error: usersError } = await supabase
-    .from('profiles')
-    .select('email, username')
-    .eq('email', userSession.session.user.email)
-    .single()
-  user.value = userData
-  console.log(info, userSession.session.user.id, userData)
+    .from('builds')
+    .select('*, profiles(username,id)')
+    .eq('user_id', userSession.session.user.id)
+  user.value = userData[0].profiles
+  builds.value = userData
 })
 </script>
 <style>
@@ -134,6 +126,7 @@ main {
   vertical-align: middle;
   margin: auto;
   margin-top: 2rem;
+  margin-left: 1rem;
 }
 
 .logout:hover,
