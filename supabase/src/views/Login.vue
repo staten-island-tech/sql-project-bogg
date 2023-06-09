@@ -1,11 +1,18 @@
 <template>
-  <form class="row flex-center flex" @submit.prevent="handleLogin">
+  <form class="row flex-center flex" @submit.prevent="handleLogin" autocomplete="on">
     <h1>PC PART PICKER</h1>
     <h1>Your Account</h1>
     <div class="col-6form-widget">
       <h1 class="header">Sign In</h1>
       <div>
-        <input class="inputField" required type="email" placeholder="Email" v-model="loginEmail" />
+        <input
+          class="inputField"
+          required
+          type="email"
+          placeholder="Email"
+          v-model="loginEmail"
+          autocomplete="email"
+        />
       </div>
       <div>
         <input
@@ -14,6 +21,7 @@
           type="password"
           placeholder="Password"
           v-model="loginPassword"
+          autocomplete="current-password"
         />
       </div>
       <div>
@@ -26,20 +34,22 @@
       </div>
     </div>
     <h1>Not a member?</h1>
-    <RouterLink to="/register" class="register" v-if="!showRegister && !session">
-      Register Here
-    </RouterLink>
+    <RouterLink to="/register" class="register" v-if="!showRegister"> Register Here </RouterLink>
   </form>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { supabase } from '../lib/supabaseClient'
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
+import { userSessionStore } from '../stores/userSession'
+import { onMounted } from 'vue'
 
+const router = useRouter()
 const loadingLogin = ref(false)
 const loginEmail = ref('')
 const loginPassword = ref('')
+const userSession = userSessionStore()
 
 const handleLogin = async () => {
   try {
@@ -49,30 +59,38 @@ const handleLogin = async () => {
       password: loginPassword.value
     })
     if (error) {
-      console.log(error)
+      throw error
     } else {
-      console.log(data)
+      console.log(data, 'loginPage Data')
+    }
+  } catch (error) {
+    console.log(error)
+    if ((error = 'Email not confirmed')) {
+      alert('Email not confirmed yet.')
     }
   } finally {
     loadingLogin.value = false
+    if (userSession.session.user.role === 'authenticated') {
+      router.push(`/account/${userSession.session.user.id}`)
+    }
   }
 }
+
+onMounted(() => {
+  if (userSession.session !== null) {
+    router.push(`/account/${userSession.session.user.id}`)
+  }
+})
 </script>
 
 <style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background-color: #f0f0f0;
-}
 .col-6form-widget {
   width: 700px;
 }
+
 form {
   display: flex;
+  width: 740px;
   flex-direction: column;
   align-items: center;
   background-color: #ffffff;
@@ -131,14 +149,16 @@ h1 {
 .register {
   /* Register button styles */
   border-style: solid;
-  border-color: #ffffff; /* Set the border color to white */
+  border-color: #ffffff;
+  /* Set the border color to white */
   font-weight: bold;
   text-align: center;
   width: 100%;
   display: inline-block;
   padding: 10px 20px;
   background-color: #ffffff;
-  color: #007bff; /* Set the text color to the same blue as the Sign In button */
+  color: #007bff;
+  /* Set the text color to the same blue as the Sign In button */
   text-decoration: none;
   border-radius: 4px;
   border: none;
