@@ -1,10 +1,12 @@
 <template>
   <div class="container">
-    <RouterView />
+    <!-- <RouterView /> -->
+    <Homepage />
   </div>
 </template>
 
 <script setup>
+import Homepage from './views/Homepage.vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { onMounted, ref, watch } from 'vue'
 import { supabase } from '../src/lib/supabaseClient'
