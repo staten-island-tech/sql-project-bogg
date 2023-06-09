@@ -54,9 +54,8 @@ const router = createRouter({
   ]
 })
 
+const userSession = userSessionStore()
 router.beforeEach((to, from, next) => {
-  const userSession = userSessionStore()
-
   if (to.meta.needsAuth) {
     if (userSession.session) {
       return next()
