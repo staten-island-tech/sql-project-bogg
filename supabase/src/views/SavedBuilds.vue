@@ -120,7 +120,7 @@ onMounted(async () => {
   grid-area: home;
   font-size: 20px;
   display: block;
-  width: 10rem;
+  width: 5.5rem;
 }
 
 .header {

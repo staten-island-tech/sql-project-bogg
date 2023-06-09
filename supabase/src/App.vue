@@ -1,7 +1,6 @@
 <template>
   <div class="container">
-    <!-- <RouterView /> -->
-    <Homepage />
+    <RouterView />
   </div>
 </template>
 
@@ -18,7 +17,6 @@ const session = ref()
 const showRegister = ref(false)
 
 supabase.auth.onAuthStateChange((event, session) => {
-  console.log(event)
   userSession.session = session
 })
 

@@ -3,19 +3,18 @@
     <h1>Welcome to PC Picker Parts</h1>
     <h2>Build Guides</h2>
     <a
-      href="https://www.newegg.com/insider/building-a-gaming-pc-for-the-first-time-dont-panic-this-guide-can-help-you-out/"
-      >Check out this article for first-time PC builders!</a
-    >
+      href="https://www.newegg.com/insider/building-a-gaming-pc-for-the-first-time-dont-panic-this-guide-can-help-you-out/">Check
+      out this article for first-time PC builders!</a>
     <a href="https://www.pcgamer.com/pc-build-guide-budget-gaming-pc/">Budget Intel Gaming PC</a>
-    <a href="https://techbuyersguru.com/guide/the-best-750-budget-gaming-pc-build/"
-      >$750 Gaming PC</a
-    >
+    <a href="https://techbuyersguru.com/guide/the-best-750-budget-gaming-pc-build/">$750 Gaming PC</a>
     <a href="https://www.pcgamer.com/gaming-pc-build-guide/">Mid-tier AMD PC</a>
     <div class="profiles">
       <h2>Profiles</h2>
       <ul>
         <li v-for="profile in profiles" :key="profile.id">
-          <span>{{ profile.username }}</span>
+          <a :href="'user/' + profile.id">
+            <span>{{ profile.username }}</span>
+          </a>
         </li>
       </ul>
     </div>
@@ -29,7 +28,7 @@ import { supabase } from '../lib/supabaseClient'
 const profiles = ref([])
 
 onMounted(async () => {
-  const { data, error } = await supabase.from('profiles').select('*')
+  const { data, error } = await supabase.from('profiles').select('username, id')
   if (error) {
     console.error(error.message)
   } else {

@@ -4,13 +4,11 @@
     <nav>
       <h2 id="title">Your Builds</h2>
       <div class="parent">
-        <RouterLink :to="'/build/' + build.id" class="child" v-for="build in builds">
+        <RouterLink :to="'/build/edit/' + build.id" class="child" v-for="build in builds">
           <p class="name">{{ build.name }}</p>
-          <p class="description"></p>
         </RouterLink>
         <RouterLink :to="`/${userSession.session.user.id}/new`" class="child new">
           <p class="name">New</p>
-          <p class="description"></p>
         </RouterLink>
       </div>
       <button @click="logout" class="logout">Logout</button>
@@ -228,12 +226,6 @@ h2 {
   width: 100%;
   text-align: center;
   font-size: 3rem;
-}
-
-.discription {
-  width: 100%;
-  text-align: center;
-  font-size: 1.5rem;
 }
 
 .new {

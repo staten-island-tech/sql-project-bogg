@@ -8,28 +8,38 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
-      meta: {
-        needsAuth: true
-      }
+      component: () => import('../views/Homepage.vue')
     },
     {
       path: '/account/:userId',
       component: () => import('../views/HomeView.vue'),
-      name: 'Account',
+      name: 'Account'
+    },
+    {
+      path: '/user/:id',
+      name: 'user',
+      component: () => import('../views/AccountView.vue')
+    },
+    {
+      path: '/build/:id',
+      name: 'publicBuild',
+      component: () => import('../views/BuildView.vue')
+    },
+    {
+      path: '/build/edit/:build',
+      name: 'build',
+      component: () => import('../views/SavedBuilds.vue'),
       meta: {
         needsAuth: true
       }
     },
     {
-      path: '/build/:build',
-      name: 'build',
-      component: () => import('../views/SavedBuilds.vue')
-    },
-    {
       path: '/:userId/new',
       name: 'new',
-      component: () => import('../views/SavedBuilds.vue')
+      component: () => import('../views/SavedBuilds.vue'),
+      meta: {
+        needsAuth: true
+      }
     },
     {
       path: '/register',
