@@ -1,8 +1,8 @@
 <template>
     <div class="build-container">
         <RouterLink to="/" class="home">Home</RouterLink>
-        <p>></p>
-        <RouterLink to="/" class="back">Back</RouterLink>
+        <p class="arr">></p>
+        <RouterLink :to="'/user/' + data.user_id" class="back">Back</RouterLink>
         <h1>
             {{ data.name }}
         </h1>
@@ -45,12 +45,10 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
-import { userSessionStore } from '../stores/userSession'
 import { supabase } from '../lib/supabaseClient'
 
 const route = useRoute()
 const data = ref({ info: {}, profiles: { username: {} } })
-const username = ref('')
 
 function objectControl(value) {
     if (value.default !== undefined) {
@@ -77,11 +75,25 @@ onMounted(async () => {
     grid-area: home;
     font-size: 20px;
     display: inline-block;
-    width: 5.5rem;
+    width: 6rem;
+    border: 1px solid rgb(0, 189, 126);
+    border-radius: 1rem;
+    top: -1.5rem;
+    left: -3rem;
+    padding-left: 2px;
+}
+
+.arr {
+    top: -1.5rem;
+    left: -3rem;
+}
+
+.back {
+    width: 4.5rem;
 }
 
 .build-container {
-    width: 80rem;
+    width: 96vw;
     height: 99vh;
     flex-wrap: wrap;
     padding: 2rem;
@@ -99,14 +111,14 @@ h2 {
 }
 
 .component {
+    width: 80rem;
 
     display: block;
-    width: 100%;
     text-align: left;
-    align-items: left;
     margin-bottom: 2rem;
     border: blue solid 2px;
     padding-left: 2rem;
+    margin: auto;
 }
 
 p {

@@ -108,17 +108,22 @@ body {
 main {
   height: 97vh;
   padding-top: 1rem;
-  width: 80vw;
+  width: 96vw;
   text-align: center;
 }
 
 .home-page {
   font-size: 20px;
   display: fixed;
-  width: 5.5rem;
+  position: absolute;
+  width: 6rem;
   height: fit-content;
-  top: 1rem;
   left: 0rem;
+  top: -0.5rem;
+  padding-left: 2px;
+  border: 1px solid rgb(0, 189, 126);
+  border-radius: 1rem;
+  z-index: 2;
 }
 
 .logout {

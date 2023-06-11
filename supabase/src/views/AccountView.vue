@@ -16,7 +16,6 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
-import { userSessionStore } from '../stores/userSession'
 import { supabase } from '../lib/supabaseClient'
 
 const route = useRoute()
@@ -47,7 +46,11 @@ onMounted(async () => {
     grid-area: home;
     font-size: 20px;
     display: block;
-    width: 5.5rem;
+    width: 6rem;
+    padding-left: 2px;
+    border: 1px solid rgb(0, 189, 126);
+    border-radius: 1rem;
+    top: 0.5rem;
 }
 
 body {

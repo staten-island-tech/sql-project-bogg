@@ -2,7 +2,7 @@
   <div class="new">
     <nav>
       <RouterLink to="/" class="home">Home</RouterLink>
-      <p>></p>
+      <p class="arr">></p>
       <RouterLink :to="userSession.session ? '/account/' + userSession.session.user.id : '/account/123'" class="back">
         Account
       </RouterLink>
@@ -126,11 +126,21 @@ onMounted(async () => {
 .back {
   font-size: 20px;
   display: inline-block;
-  width: 5.5rem;
+  width: 6rem;
+  padding-left: 2px;
+  border: 1px solid rgb(0, 189, 126);
+  border-radius: 1rem;
+  top: -2.1rem;
+  left: -1rem;
+}
+
+.arr {
+  top: -2.1rem;
+  left: -1rem;
 }
 
 .back {
-  width: 7rem;
+  width: 8rem;
 }
 
 nav {
