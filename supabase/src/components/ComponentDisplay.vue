@@ -32,13 +32,14 @@
           <div class="child-subkey">
             <p v-for="value in keys" class="subkey" :style="'width: ' + 100 / keys.length + '%;'">
               {{ value === 'price' ? '$' : ''
-              }}{{ JSON.stringify(component[value]) !== '{}' ? component[value] : 'None' }}
+              }}{{ component[value]["0"] === "GB" ? `${component[value]["0"]}:
+              ${component[value]["1"]}` : component[value] }}
             </p>
           </div>
         </div>
       </li>
       <div class="showMore">
-        <button v-if="getLength" @click="increaseCount">Show More</button>
+        <button v-if="currentCount <= filteredData.length" @click="increaseCount">Show More</button>
       </div>
     </ul>
   </div>
@@ -47,8 +48,6 @@
 <script setup>
 import FilterComponent from './FilterComponent.vue'
 import { ref, defineProps, defineEmits, computed, watch, onMounted } from 'vue'
-// import * as allData from '../data/index.js'
-import { supabase } from '../lib/supabaseClient'
 
 const importedData = ref({ data: [] })
 const props = defineProps({
@@ -83,42 +82,76 @@ function manageFilters(filter) {
   if (selectedFilters.value[filter[0]].length === 0) delete selectedFilters.value[filter[0]]
 }
 
-function getLength() {
-  return currentCount.value < importedData.value[props.part].data.length
-}
+const getLength = computed(() => {
+  return currentCount.value < filteredData.value.length
+})
 
 function filterValue(data) {
   if (selectedFilters.value[data.key] === undefined) {
-    selectedFilters.value[data.key] = { values: {}, current: '' }
+    if (data.subKey !== undefined) {
+      selectedFilters.value[data.key] = { width: {}, height: {} }
+    } else if (data.prefix === undefined) {
+      selectedFilters.value[data.key] = { values: {} }
+    } else {
+      selectedFilters.value[data.key] = { values: {}, prefix: data.prefix }
+    }
   }
   if (data.values === undefined) {
     selectedFilters.value[data.key].current = data.current
+  } else if (data.subKey !== undefined) {
+    selectedFilters.value[data.key][data.subKey] = data.values
   } else {
     selectedFilters.value[data.key].values = data.values
   }
 }
 
 function increaseCount() {
-  if (currentCount.value < importedData.value[props.part].data.length) currentCount.value += 200
-  else currentCount.value = importedData.value[props.part].data.length
+  if (currentCount.value < data.value.length) currentCount.value += 200
+  else currentCount.value = data.value.length
   createData.value
 }
 
 const createData = computed(() => {
-  data.value = importedData.value.data.splice(0, currentCount.value).map((data) => {
+  let excluded = []
+  data.value = importedData.value.data.map((data) => {
     return Object.entries(data).reduce((acc, [key, value]) => {
       if (typeof value === 'object') {
         if (Array.isArray(value)) {
           value[0] === 'USD' ? (value = parseFloat(value[1])) : (value = parseFloat(value[0]))
         } else {
-          if (value === null) {
-            value = {}
-          } else if (value.default === null) {
-            value = { min: value.min, max: value.max }
-          } else if (value.min === null && value.max === null) {
-            value = { default: value.default }
+          let find = false;
+          if (!excluded.includes(key) && value === null) {
+            value = importedData.value.data.find(obj => obj[key] !== null)
+            if (value !== undefined) value = value[key]
+            find = true
+          }
+          if (value !== undefined && value !== null && typeof value === 'object') {
+            if (find) {
+              if (Object.keys(value).length === 1) {
+                value = { key: 0 }
+              } else if (Object.keys(value).length === 2) {
+                value = { width: 0, height: 0 }
+              } else {
+                value = { default: 0, min: null, max: null }
+              }
+            }
+            if (value.width !== undefined) {
+              value = value
+            } else if (value.default === null) {
+              value = { min: value.min, max: value.max }
+            } else if (value.min === null && value.max === null) {
+              value = { default: value.default }
+            } else {
+              value = Object.values(value)[0]
+              if (typeof value === 'number' && value > 999999999) {
+                value = ['GB', Math.round(value / 10000000) / 100]
+              } else {
+                value = ['GB', 0]
+              }
+            }
           } else {
-            value = Object.values(value)[0]
+            excluded.push(key)
+            value = "None"
           }
         }
       }
@@ -131,7 +164,7 @@ const createData = computed(() => {
 const filteredData = computed(() => {
   return data.value.filter((data) => {
     for (const [key, value] of Object.entries(selectedFilters.value)) {
-      const dataValue = data[key]
+      let dataValue = data[key]
 
       if (typeof value === 'object' && value.current !== undefined) {
         if (value.current === 'minMax') {
@@ -155,48 +188,65 @@ const filteredData = computed(() => {
             if (dataValue.default < value.values.min || dataValue.default > value.values.max) return false
           }
         }
+      } else if (value.width !== undefined) {
+        if (dataValue.width < value.width.min || dataValue.width > value.width.max || dataValue.height < value.height.min || dataValue.height > value.height.max) return false
+      } else if (typeof value === 'object' && value.prefix === undefined && !Array.isArray(value)) {
+        if (dataValue === 'None') dataValue = 0
+        if (dataValue < value.values.min || dataValue > value.values.max) return false
       } else if (typeof value === 'object' && !Array.isArray(value)) {
-        if (dataValue < value.min || dataValue > value.max) return false
+        if (dataValue["1"] < value.values.min || dataValue["1"] > value.values.max) return false
       } else {
         if (!value.includes(dataValue)) return false
       }
     }
     return true
-  })
+  }).slice(0, currentCount.value)
 })
 
 const convertList = computed(() => {
   filtersList.value = Object.entries(data.value[0]).reduce((acc, [key, value]) => {
     let set = []
-    if (typeof value === 'object') {
-      set = data.value.reduce(
-        (acc, obj) => {
-          if (obj[key].min !== undefined && obj[key].max !== undefined) {
-            acc.min.add(obj[key].min)
-            acc.max.add(obj[key].max)
-          } else if (obj[key].default !== undefined) {
-            acc.default.add(obj[key].default)
-          }
-          return acc
-        },
-        { default: new Set(), min: new Set(), max: new Set() }
-      )
-      if (set.min.size + set.max.size + set.default.size === 0) return acc
-      acc[key] = {
-        default: Array.from(set.default),
-        min: Array.from(set.min),
-        max: Array.from(set.max)
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      if (value.width !== undefined) {
+        value = {
+          width: Array.from(new Set(data.value.map(obj => obj[key].width))),
+          height: Array.from(new Set(data.value.map(obj => obj[key].height)))
+        }
+        acc[key] = value
+      } else {
+        set = data.value.reduce(
+          (acc, obj) => {
+            if (obj[key].min !== undefined && obj[key].max !== undefined) {
+              acc.min.add(obj[key].min)
+              acc.max.add(obj[key].max)
+            } else if (obj[key].default !== undefined) {
+              acc.default.add(obj[key].default)
+            }
+            return acc
+          },
+          { default: new Set(), min: new Set(), max: new Set() }
+        )
+        if (set.min.size + set.max.size + set.default.size === 0) return acc
+        acc[key] = {
+          default: Array.from(set.default),
+          min: Array.from(set.min),
+          max: Array.from(set.max)
+        }
       }
+    } else if (Array.isArray(value)) {
+      acc[key] = ['GB', Array.from(new Set(data.value.map(array => array[key][1]))).filter(value => value !== undefined && value !== null)]
     } else {
       set = new Set(data.value.map((obj) => (typeof obj[key] === 'object' ? undefined : obj[key])))
       set.delete(undefined)
       set = Array.from(set)
+      if (set.find(item => typeof item === 'number')) set = set.filter(value => value !== 'None')
       if (set.length !== 1 && set[0] !== null) {
         acc[key] = set
       }
     }
     return acc
   }, {})
+
   keys.value = Object.keys(filtersList.value).filter(
     (data) => Array.isArray(filtersList.value[data]) && data.length < 17
   )
@@ -207,19 +257,16 @@ watch(
   async (newVal, oldValue) => {
     importedData.value = {}
     importedData.value = await fetch(`https://gnxlyuryauoscxoqyjcz.supabase.co/storage/v1/object/public/componentData/data/${props.part}.json`).then(data => data.json())
-    selectedFilters.value = {}
-    filtersList.value = {}
-    keys.value = []
     createData.value
+    selectedFilters.value = {}
+    keys.value = []
     convertList.value
     currentCount.value = 200
-
   },
   { deep: true }
 )
 
 onMounted(async () => {
-  console.log(props.part)
   if (props.part !== undefined) {
     importedData.value = await fetch(`https://gnxlyuryauoscxoqyjcz.supabase.co/storage/v1/object/public/componentData/data/${props.part}.json`)
       .then(data => data.json())
@@ -227,7 +274,6 @@ onMounted(async () => {
     importedData.value = await fetch(`https://gnxlyuryauoscxoqyjcz.supabase.co/storage/v1/object/public/componentData/data/caseFan.json`).then(data => data.json())
 
   }
-  console.log(importedData.value)
   createData.value
   convertList.value
 

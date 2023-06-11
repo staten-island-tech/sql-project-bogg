@@ -7,8 +7,8 @@
       <input type="range" class="range-min" min="0" :max="totalValue" step="0.1" v-model="minValue" />
       <input type="range" class="range-max" min="0" :max="totalValue" step="0.1" v-model="maxValue" />
       <div class="nums">
-        <p>{{ !tempSymbol ? symbol : tempSymbol }}{{ genValue(minValue) }}</p>
-        <p>{{ !tempSymbol ? symbol : tempSymbol }}{{ genValue(maxValue) }}</p>
+        <p>{{ symbol }}{{ genValue(minValue) }}</p>
+        <p>{{ symbol }}{{ genValue(maxValue) }}</p>
       </div>
     </div>
     <div class="range-input" v-else>
@@ -38,23 +38,14 @@ const props = defineProps({
 
 const emit = defineEmits(['change'])
 
-const original = 1000000000000000
 const minValue = ref(0)
 const maxValue = ref(1000000000000000)
 const valueGap = ref(10)
 const totalValue = ref(1000000000000000)
-const tempSymbol = ref(false)
 
 function genValue(value) {
   value = parseFloat(value)
-  tempSymbol.value = false
-  if (parseFloat(value) < 1000000000 || value === 1000000000000000) {
-    return value > 10000 ? value.toExponential(2) : value
-  } else {
-    value = value / 1000000000
-    tempSymbol.value = 'GB:'
-    return value > 10000 ? value.toExponential(2) : Math.round(value)
-  }
+  return value > 10000 ? value.toExponential(2) : value
 }
 
 const progressWidth = computed(() => {
@@ -64,7 +55,7 @@ const progressWidth = computed(() => {
 
 const greatestValue = computed(() => {
   minValue.value = 0
-  if (Math.max(...props.valueList) < 3) {
+  if (Math.max(...props.valueList) < 7) {
     totalValue.value = Math.ceil(Math.max(...props.valueList) * 100) / 100
     valueGap.value = Math.round(totalValue.value * 10) / 100
     maxValue.value = totalValue.value

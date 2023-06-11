@@ -18,7 +18,16 @@
       }}
     </h1>
 
-    <label v-if="typeof value === 'object' && !Array.isArray(value)">
+    <label v-if="value.width !== undefined">
+      <h2>Width</h2>
+      <NumberSlide :valueList="[...value.width]"
+        @change="event => emit('valueChange', { key: key, subKey: 'width', values: event })" />
+      <h2>Height</h2>
+      <NumberSlide :valueList="[...value.height]"
+        @change="event => emit('valueChange', { key: key, subKey: 'height', values: event })" />
+    </label>
+
+    <label v-else-if="typeof value === 'object' && !Array.isArray(value)">
       <ThreeSwitch @select="
         (event) => {
           active[key] = event
@@ -29,14 +38,13 @@
         @change="(event) => emit('valueChange', { key: key, values: event })" />
     </label>
 
+    <NumberSlide v-else-if="Array.isArray(value) && value[0] === 'GB'" :symbol="value[0]"
+      :valueList="value[1].map((value) => parseFloat(value)).filter((value) => value !== null)"
+      @change="(event) => emit('valueChange', { key: key, prefix: value[0], values: event })" />
+
     <NumberSlide v-else-if="typeof value[0] === 'number'"
       :valueList="value.map((value) => parseFloat(value)).filter((value) => value !== null)"
       @change="(event) => emit('valueChange', { key: key, values: event })" />
-
-    <label v-else-if="value.length <= 5" v-for="item in value.sort()" :key="item">
-      <input type="checkbox" name="option3" :value="item" @change="(event) => selectedFilter(event, key, item)" />
-      <p>{{ item }}</p>
-    </label>
 
     <div v-else>
       <label v-for="item in active[key] ? value.sort().slice(0, 5) : value.sort()" :key="item">
@@ -44,7 +52,7 @@
           @change="(event) => selectedFilter(event, key, item)" />
         <p v-if="item !== null">{{ item }}</p>
       </label>
-      <button @click="active[key] = !active[key]" class="show">
+      <button @click="active[key] = !active[key]" class="show" v-if="value.length > 5">
         {{ active[key] ? 'Show more' : 'Show less' }}
       </button>
     </div>
@@ -66,7 +74,6 @@ const props = defineProps({
 const emit = defineEmits(['filterControl', 'valueChange'])
 
 const active = ref({})
-const price = ref(props.list.price)
 
 function selectedFilter(event, key, filter) {
   if (event.target.checked) {
@@ -107,6 +114,10 @@ onMounted(() => {
 h1 {
   font-size: 25px;
   margin: 0;
+}
+
+h2 {
+  font-size: 1.5rem;
 }
 
 p {
